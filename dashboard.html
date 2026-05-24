@@ -1,0 +1,2540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Admissions Portal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --sidebar-w: 260px;
+  --primary: #0f4c81;
+  --primary-light: #e3f0ff;
+  --accent: #e63946;
+  --success: #2dc653;
+  --warn: #f4a261;
+  --purple: #7c3aed;
+  --bg: #f0f4f8;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --sidebar-bg: #0d1b2a;
+  --sidebar-text: #94a3b8;
+  --sidebar-active: #1e3a5f;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow: hidden; }
+
+/* ======= SIDEBAR ======= */
+.sidebar { width: var(--sidebar-w); background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; transition: .3s; }
+.sidebar-brand { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sidebar-brand .logo { display: flex; align-items: center; gap: .75rem; }
+.sidebar-brand .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #0f4c81, #1565c0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; }
+.sidebar-brand h2 { font-size: 1rem; font-weight: 700; color: #e2e8f0; line-height: 1.2; }
+.sidebar-brand p { font-size: .75rem; color: #64748b; margin-top: .2rem; }
+.sidebar-user { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: .75rem; }
+.user-avatar { width: 36px; height: 36px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .9rem; }
+.user-info .name { font-size: .85rem; font-weight: 600; color: #e2e8f0; }
+.user-info .role { font-size: .75rem; color: #64748b; text-transform: capitalize; }
+nav.side-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+.nav-section { padding: .5rem 1.5rem .3rem; font-size: .7rem; font-weight: 700; letter-spacing: 1.5px; color: #475569; text-transform: uppercase; margin-top: .5rem; }
+.nav-item { display: flex; align-items: center; gap: .75rem; padding: .7rem 1.5rem; color: var(--sidebar-text); text-decoration: none; cursor: pointer; transition: .2s; border-left: 3px solid transparent; font-size: .875rem; font-weight: 500; }
+.nav-item:hover { background: rgba(255,255,255,.05); color: #e2e8f0; }
+.nav-item.active { background: var(--sidebar-active); color: #60a5fa; border-left-color: #60a5fa; }
+.nav-item i { width: 18px; text-align: center; }
+.nav-item .badge { margin-left: auto; background: var(--accent); color: #fff; border-radius: 10px; padding: .1rem .5rem; font-size: .7rem; font-weight: 700; }
+.sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,.08); }
+.logout-btn { display: flex; align-items: center; gap: .75rem; color: #ef4444; cursor: pointer; font-size: .875rem; font-weight: 500; padding: .5rem; border-radius: 8px; transition: .2s; }
+.logout-btn:hover { background: rgba(239,68,68,.1); }
+
+/* ======= MAIN ======= */
+.main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.topbar-left h1 { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.topbar-left p { font-size: .8rem; color: var(--text-muted); margin-top: .1rem; }
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.search-box { display: flex; align-items: center; gap: .5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .5rem 1rem; }
+.search-box input { border: none; background: none; outline: none; font-size: .875rem; width: 200px; }
+.page-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+
+/* ======= STAT CARDS ======= */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: var(--card); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; transition: .2s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.stat-val { font-size: 1.8rem; font-weight: 800; line-height: 1; font-family: 'JetBrains Mono', monospace; }
+.stat-label { font-size: .8rem; color: var(--text-muted); margin-top: .2rem; }
+.stat-trend { font-size: .75rem; margin-top: .3rem; }
+.si-blue { background: #dbeafe; color: #1d4ed8; }
+.si-green { background: #dcfce7; color: #16a34a; }
+.si-purple { background: #ede9fe; color: #7c3aed; }
+.si-orange { background: #ffedd5; color: #ea580c; }
+.si-red { background: #fee2e2; color: #dc2626; }
+.si-teal { background: #ccfbf1; color: #0d9488; }
+
+/* ======= GRID ======= */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+/* ======= CARDS ======= */
+.card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+.card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.card-header h3 { font-size: .95rem; font-weight: 700; }
+.card-body { padding: 1.25rem; }
+
+/* ======= TABLE ======= */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { background: var(--bg); padding: .75rem 1rem; text-align: left; font-size: .78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: .75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+
+/* ======= BADGES ======= */
+.badge { display: inline-flex; align-items: center; gap: .3rem; padding: .25rem .7rem; border-radius: 20px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.badge-new { background: #dbeafe; color: #1d4ed8; }
+.badge-contacted { background: #fef3c7; color: #92400e; }
+.badge-applied { background: #ede9fe; color: #5b21b6; }
+.badge-test_scheduled { background: #ccfbf1; color: #0f766e; }
+.badge-test_completed { background: #dcfce7; color: #15803d; }
+.badge-selected { background: #dcfce7; color: #166534; }
+.badge-enrolled { background: #d1fae5; color: #064e3b; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+.badge-passed { background: #dcfce7; color: #166534; }
+.badge-failed { background: #fee2e2; color: #991b1b; }
+.badge-pending { background: #f1f5f9; color: #475569; }
+.badge-scheduled { background: #dbeafe; color: #1e40af; }
+.badge-facebook { background: #eff6ff; color: #1d4ed8; }
+.badge-instagram { background: #fdf2f8; color: #9d174d; }
+.badge-website { background: #f0fdf4; color: #166534; }
+
+/* ======= FILTERS ======= */
+.filters { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.filter-btn { padding: .4rem .9rem; border: 1px solid var(--border); border-radius: 20px; background: var(--card); font-size: .8rem; cursor: pointer; font-weight: 500; transition: .2s; }
+.filter-btn.active, .filter-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+select.filter-select { padding: .4rem .8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card); font-size: .85rem; cursor: pointer; outline: none; }
+
+/* ======= PIPELINE ======= */
+.pipeline { display: flex; gap: 0; overflow-x: auto; padding-bottom: 1rem; }
+.pipeline-stage { min-width: 160px; flex: 1; border-right: 1px solid var(--border); padding: 1rem; text-align: center; position: relative; }
+.pipeline-stage:last-child { border-right: none; }
+.pipeline-stage::after { content: '→'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; color: var(--border); z-index:1; }
+.pipeline-stage:last-child::after { display: none; }
+.p-count { font-size: 2rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.p-label { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.p-bar { height: 4px; border-radius: 2px; margin-top: .75rem; }
+
+/* ======= ACTION BUTTONS ======= */
+.btn { padding: .4rem .85rem; border: none; border-radius: 6px; cursor: pointer; font-size: .8rem; font-weight: 600; transition: .2s; display: inline-flex; align-items: center; gap: .3rem; }
+.btn-sm { padding: .3rem .6rem; font-size: .75rem; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-warn { background: var(--warn); color: #fff; }
+.btn-danger { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.btn-purple { background: var(--purple); color: #fff; }
+.btn:hover { opacity: .85; transform: translateY(-1px); }
+
+/* ======= MODAL ======= */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 1rem; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--card); border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,.2); }
+.modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+.modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); }
+.modal-body { padding: 1.5rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .35rem; color: var(--text-muted); }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: .6rem .9rem; border: 1px solid var(--border); border-radius: 8px; font-size: .875rem; outline: none; font-family: inherit; }
+.form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: .75rem; }
+
+/* ======= LEAD DETAIL PANEL ======= */
+.detail-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 500px; background: var(--card); border-left: 1px solid var(--border); z-index: 200; transform: translateX(100%); transition: .3s; overflow-y: auto; }
+.detail-panel.open { transform: translateX(0); }
+.panel-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--card); z-index: 1; }
+.panel-section { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+.panel-section h4 { font-size: .8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .75rem; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.info-item .label { font-size: .75rem; color: var(--text-muted); }
+.info-item .value { font-size: .875rem; font-weight: 600; margin-top: .1rem; }
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.timeline-item { display: flex; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+.timeline-item:last-child { border-bottom: none; }
+.timeline-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; flex-shrink: 0; margin-top: .1rem; }
+.tl-email { background: #dbeafe; color: #1d4ed8; }
+.tl-whatsapp { background: #dcfce7; color: #16a34a; }
+.tl-note { background: #fef3c7; color: #92400e; }
+.tl-status_change { background: #ede9fe; color: #7c3aed; }
+.tl-test_scheduled { background: #ccfbf1; color: #0f766e; }
+.tl-score_change { background: #ffedd5; color: #ea580c; }
+.timeline-content .action { font-size: .85rem; font-weight: 600; }
+.timeline-content .time { font-size: .75rem; color: var(--text-muted); margin-top: .15rem; }
+
+/* ======= SCORE BAR ======= */
+.score-bar { display: flex; align-items: center; gap .5rem; }
+.score-pill { display: inline-flex; align-items: center; gap: .3rem; background: linear-gradient(135deg, #0f4c81, #1565c0); color: #fff; padding: .2rem .7rem; border-radius: 20px; font-size: .75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.badge-absent { background: #fef3c7; color: #92400e; }
+/* ======= SOURCE ICON ======= */
+.source-icon { width: 22px; height: 22px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: .7rem; margin-right: .4rem; }
+
+/* ======= MERIT TABLE ======= */
+.rank-1 td:first-child { font-weight: 800; color: #f59e0b; }
+.rank-2 td:first-child { font-weight: 700; color: #94a3b8; }
+.rank-3 td:first-child { font-weight: 700; color: #cd7c2f; }
+
+/* ======= CHART CONTAINER ======= */
+.chart-container { position: relative; height: 220px; }
+
+/* ======= NOTIFICATION ======= */
+.notif { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #1e293b; color: #fff; padding: .9rem 1.25rem; border-radius: 10px; font-size: .875rem; z-index: 9999; transform: translateY(100px); opacity: 0; transition: .3s; max-width: 340px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.notif.show { transform: translateY(0); opacity: 1; }
+.notif.success { border-left: 4px solid var(--success); }
+.notif.error { border-left: 4px solid var(--accent); }
+
+/* ======= PAGE SECTIONS ======= */
+.page { display: none; }
+.page.active { display: block; }
+
+@media(max-width:1200px) { .stats-row { grid-template-columns: repeat(2,1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+@media(max-width:768px) { .sidebar { width: 60px; } .sidebar-brand h2, .sidebar-brand p, .user-info, .nav-section, .nav-item span, .sidebar-footer p { display: none; } .main { margin-left: 60px; } .stats-row { grid-template-columns: 1fr 1fr; } }
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Merit Rank Colors */
+.rank-1 td:first-child { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #0d2340; font-weight: bold; }
+.rank-2 td:first-child { background: linear-gradient(135deg, #c0c0c0, #e0e0e0); color: #0d2340; font-weight: bold; }
+.rank-3 td:first-child { background: linear-gradient(135deg, #cd7f32, #e0a878); color: #0d2340; font-weight: bold; }
+
+
+/* Fix scrolling for all pages */
+#page-schedule,
+#page-leads,
+#page-merit,
+#page-pipeline,
+#page-analytics,
+#page-seats,
+#page-students {
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+}
+
+/* Ensure card-body can scroll internally if needed */
+.card-body {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+/* Make tables scroll horizontally on small screens */
+.table-wrap {
+    overflow-x: auto;
+}
+.badge-absent { background: #fef3c7; color: #92400e; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">
+      <div class="logo-icon"><i class="fas fa-university"></i></div>
+      <div>
+        <h2>Admissions</h2>
+        <p>Portal v2.0</p>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar" id="userInitial">A</div>
+    <div class="user-info">
+      <div class="name" id="userName">Admin</div>
+      <div class="role" id="userRole">superadmin</div>
+    </div>
+  </div>
+  <nav class="side-nav">
+    <div class="nav-section">Overview</div>
+    <a class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></a>
+    <div class="nav-section">Lead Management</div>
+    <a class="nav-item" onclick="showPage('leads')"><i class="fas fa-users"></i> <span>All Leads</span> <span class="badge" id="leadsCount">0</span></a>
+    <a class="nav-item" onclick="showPage('pipeline')"><i class="fas fa-filter"></i> <span>Pipeline</span></a>
+    <div class="nav-section">Tests</div>
+    <a class="nav-item" onclick="showPage('schedule')"><i class="fas fa-calendar-alt"></i> <span>Schedule Test</span></a>
+    <a class="nav-item" onclick="showPage('merit')"><i class="fas fa-trophy"></i> <span>Merit List</span></a>
+    <div class="nav-section">Admissions</div>
+    <a class="nav-item" onclick="showPage('seats')"><i class="fas fa-chair"></i> <span>Seat Limits</span></a>
+    <a class="nav-item" onclick="showPage('students')"><i class="fas fa-users-viewfinder"></i> <span>Students by Program</span></a>
+    <div class="nav-section">System</div>
+    <a class="nav-item" onclick="showPage('analytics')"><i class="fas fa-chart-bar"></i> <span>Analytics</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="pageTitle">Dashboard</h1>
+      <p id="pageSubtitle" style="color:var(--text-muted);font-size:.8rem">Welcome back — here's what's happening</p>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <i class="fas fa-search" style="color:var(--text-muted)"></i>
+        <input type="text" id="globalSearch" placeholder="Search leads..." oninput="filterLeads()">
+      </div>
+      <button class="btn btn-primary" onclick="showPage('leads');document.getElementById('addLeadModal').classList.add('show')"><i class="fas fa-plus"></i> Add Lead</button>
+    </div>
+  </div>
+  <div class="page-content">
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-users"></i></div><div><div class="stat-val" id="s-total">—</div><div class="stat-label">Total Leads</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-user-graduate"></i></div><div><div class="stat-val" id="s-enrolled">—</div><div class="stat-label">Enrolled</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-purple"><i class="fas fa-clipboard-check"></i></div><div><div class="stat-val" id="s-selected">—</div><div class="stat-label">Selected</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange"><i class="fas fa-calendar-check"></i></div><div><div class="stat-val" id="s-tests">—</div><div class="stat-label">Tests Scheduled</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-check-circle"></i></div><div><div class="stat-val" id="s-passed">—</div><div class="stat-label">Tests Passed</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-teal"><i class="fas fa-percentage"></i></div><div><div class="stat-val" id="s-rate">—%</div><div class="stat-label">Acceptance Rate</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-sun"></i></div><div><div class="stat-val" id="s-today">—</div><div class="stat-label">Leads Today</div></div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-chart-line" style="color:var(--primary)"></i> Monthly Leads</h3></div>
+          <div class="card-body"><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-share-alt" style="color:var(--purple)"></i> Lead Sources</h3></div>
+          <div class="card-body"><div class="chart-container"><canvas id="sourceChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-graduation-cap" style="color:var(--success)"></i> Program Breakdown</h3></div>
+          <div class="card-body"><div class="chart-container"><canvas id="programChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-flask" style="color:var(--warn)"></i> Test Statistics</h3></div>
+          <div class="card-body"><div id="testStatsBody"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SEAT LIMITS PAGE ===== -->
+    <div class="page" id="page-seats">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chair"></i> Seat Limits by Program</h3>
+                <button class="btn btn-primary btn-sm" onclick="saveSeatLimits()"><i class="fas fa-save"></i> Save All</button>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--blue-lt); border-radius: 8px;">
+                    <i class="fas fa-calendar"></i> Campaign: <strong id="campaignName">Fall 2025</strong>
+                </div>
+                <div class="table-wrap">
+                    <table style="width:100%">
+                        <thead>
+                            <tr><th>Program</th><th>Total Seats</th><th>Enrolled</th><th>Available</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="seatLimitsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 1.5rem">
+            <div class="card-header">
+                <h3><i class="fas fa-history"></i> Admission Campaigns</h3>
+                <button class="btn btn-success btn-sm" onclick="showAddCampaignModal()"><i class="fas fa-plus"></i> New Campaign</button>
+            </div>
+            <div class="card-body">
+                <div class="table-wrap">
+                    <table style="width:100%">
+                        <thead><tr><th>Campaign</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="campaignsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- ===== STUDENTS BY PROGRAM PAGE ===== -->
+    <div class="page" id="page-students">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-graduation-cap"></i> Students by Program</h3>
+                <div class="filters">
+                    <button class="filter-btn" onclick="filterStudentsByProgram('all')">All</button>
+                    <button class="filter-btn" onclick="filterStudentsByProgram('bscs')">BSCS</button>
+                    <button class="filter-btn" onclick="filterStudentsByProgram('bsai')">BSAI</button>
+                    <button class="filter-btn" onclick="filterStudentsByProgram('bscys')">BSCyS</button>
+                    <button class="filter-btn" onclick="filterStudentsByProgram('bsse')">BSSE</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-wrap">
+                    <table style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Program</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr><td colspan="8" style="text-align:center;padding:2rem">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== LEADS PAGE ===== -->
+    <div class="page" id="page-leads">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+        <select class="filter-select" id="statusFilter" onchange="filterLeads()">
+          <option value="">All Status</option>
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="applied">Applied</option>
+          <option value="test_scheduled">Test Scheduled</option>
+          <option value="test_completed">Test Completed</option>
+          <option value="selected">Selected</option>
+          <option value="enrolled">Enrolled</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <select class="filter-select" id="sourceFilter" onchange="filterLeads()">
+          <option value="">All Sources</option>
+          <option value="facebook">Facebook</option>
+          <option value="instagram">Instagram</option>
+          <option value="website">Website</option>
+          <option value="friend">Friend/Family</option>
+          <option value="newspaper">Newspaper</option>
+          <option value="other">Other</option>
+        </select>
+        <select class="filter-select" id="programFilter" onchange="filterLeads()">
+          <option value="">All Programs</option>
+          <option value="bscs">BSCS</option>
+          <option value="bsai">BSAI</option>
+          <option value="bscys">BSCyS</option>
+          <option value="bsse">BSSE</option>
+          <option value="bba">BBA</option>
+          <option value="mba">MBA</option>
+        </select>
+        <button class="btn btn-secondary" onclick="loadLeads()"><i class="fas fa-sync"></i> Refresh</button>
+        <span id="leadsInfo" style="margin-left:auto;font-size:.85rem;color:var(--text-muted)"></span>
+      </div>
+      <!-- //////////////////////////////////New Addition /////////////////////////////////////////////////-->
+       <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h3 style="font-size:.95rem;font-weight:700"><i class="fas fa-file-csv" style="color:var(--success)"></i> Import Leads from CSV</h3>
+          <a href="#" onclick="downloadCSVTemplate()" style="font-size:.8rem;color:var(--primary);text-decoration:none"><i class="fas fa-download"></i> Download Template</a>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <input type="file" id="csvLeadsFile" accept=".csv" style="width:100%;padding:.5rem;border:1.5px dashed var(--border);border-radius:8px;font-size:.85rem;cursor:pointer">
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem">CSV columns: full_name, email, phone, cnic, father_name, address, education, interested_program, source, academic_percentage</div>
+          </div>
+          <button class="btn btn-success" onclick="importLeadsCSV()" style="flex-shrink:0"><i class="fas fa-upload"></i> Import CSV</button>
+        </div>
+        <div id="csvImportResult" style="margin-top:.75rem"></div>
+      </div>
+     <!-- //////////////////////////////////New Addition /////////////////////////////////////////////////-->
+
+      <div class="card">
+        <div class="table-wrap">
+          <table id="leadsTable">
+            <thead><tr>
+              <th>#</th><th>Photo</th><th>Name</th><th>Contact</th><th>Program</th>
+              <th>Source</th><th>Status</th><th>Score</th><th>Test</th>
+              <th>Date</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="leadsTableBody"><tr><td colspan="10" style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================-->
+   
+    <!-- ===== PIPELINE PAGE ===== -->
+    <div class="page" id="page-pipeline">
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header"><h3><i class="fas fa-filter"></i> Lead Status Pipeline</h3></div>
+        <div class="card-body">
+          <div class="pipeline" id="pipelineView"></div>
+        </div>
+      </div>
+      <div class="card">
+        <select class="filter-select" id="pipelineFilter" onchange="renderPipelineTable()">
+            <option value="">All Stages</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="applied">Applied</option>
+            <option value="test_scheduled">Test Scheduled</option>
+            <option value="selected">Selected</option>
+            <option value="enrolled">Enrolled</option>
+            <option value="rejected">Rejected</option>
+            <option value="absent">Absent</option>  <!-- Add this -->
+        </select>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Name</th><th>Program</th><th>Source</th><th>Status</th><th>Score</th><th>Days in System</th><th>Action</th></tr></thead>
+          <tbody id="pipelineTableBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCHEDULE TEST PAGE ===== -->
+    <div class="page" id="page-schedule">
+      <div class="grid-2">
+
+        <!-- BULK TEST SENDING SECTION -->
+      <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-header">
+              <h3><i class="fas fa-envelope-open-text"></i> Bulk Test Link Sending <span style="font-size:.7rem; background:var(--gold); color:var(--navy); padding:2px 8px; border-radius:12px; margin-left:8px">Priority Based</span></h3>
+              <button class="btn btn-secondary btn-sm" onclick="loadEligibleStudents()"><i class="fas fa-sync"></i> Refresh List</button>
+          </div>
+          <div class="card-body">
+              <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; align-items:center">
+                  <select id="bulkProgramFilter" class="filter-select" style="width:200px">
+                      <option value="">All Programs</option>
+                      <option value="bscs">BSCS</option>
+                      <option value="bsai">BSAI</option>
+                      <option value="bscys">BSCyS</option>
+                      <option value="bsse">BSSE</option>
+                  </select>
+                  <select id="bulkTestType" class="filter-select" style="width:150px">
+                      <option value="online">Online Test</option>
+                      <option value="external">External Test</option>
+                  </select>
+                  <button class="btn btn-primary" onclick="sendBulkTestLinks()" id="bulkSendBtn">
+                      <i class="fas fa-paper-plane"></i> Send to Selected (<span id="selectedCount">0</span>)
+                  </button>
+                  <button class="btn btn-success btn-sm" onclick="selectAllEligible()">
+                      <i class="fas fa-check-double"></i> Select All
+                  </button>
+                  <button class="btn btn-warning btn-sm" onclick="updatePriorityScores()">
+                      <i class="fas fa-chart-line"></i> Recalculate Priority
+                  </button>
+              </div>
+              
+              <div style="background:var(--blue-lt); padding:10px; border-radius:8px; margin-bottom:1rem; font-size:.8rem">
+                  <i class="fas fa-info-circle"></i> Students are sorted by <strong>Priority Score</strong> (60% Academic + 40% Test Score). Higher scores get test links first.
+              </div>
+              
+              <div class="table-wrap">
+                  <table style="width:100%">
+                      <thead>
+                          <tr>
+                              <th style="width:40px"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
+                              <th>#</th>
+                              <th>Name</th>
+                              <th>Program</th>
+                              <th>Academic %</th>
+                              <th>Test Score</th>
+                              <th>Priority Score</th>
+                              <th>Status</th>
+                          </tr>
+                      </thead>
+                      <tbody id="eligibleStudentsBody">
+                          <tr><td colspan="8" style="text-align:center;padding:2rem">Click "Refresh List" to load eligible students</td></tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-clock" style="color:var(--warn)"></i> Schedule External Test</h3></div>
+          <div class="card-body">
+            <div class="form-group"><label>Select Lead</label>
+              <select id="schedLead" style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:8px;font-size:.875rem"><option value="">— Select Lead —</option></select>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Test Date</label><input type="date" id="schedDate"></div>
+              <div class="form-group"><label>Test Time</label><input type="time" id="schedTime" value="09:00"></div>
+            </div>
+            <div class="form-group"><label>Venue</label><input type="text" id="schedVenue" placeholder="e.g., Main Hall, Block A"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="scheduleExternalTest(event)"><i class="fas fa-paper-plane"></i> Schedule & Notify</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-laptop" style="color:var(--purple)"></i> Create Online Test</h3></div>
+          <div class="card-body">
+            <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1rem">System auto-selects 50 questions (40 program-specific + 10 general). Test link sent via WhatsApp & Email.</p>
+            <div class="form-group"><label>Select Lead</label>
+              <select id="onlineTestLead" style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:8px;font-size:.875rem"><option value="">— Select Lead —</option></select>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:1rem;margin:1rem 0;font-size:.85rem">
+              <div style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Questions</span><strong>50 MCQs</strong></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Duration</span><strong>20 Minutes</strong></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Passing Score</span><strong>50%</strong></div>
+              <div style="display:flex;justify-content:space-between"><span>Anti-Cheat</span><strong>Tab Switch Detection</strong></div>
+            </div>
+            <button class="btn btn-purple" style="width:100%" onclick="createOnlineTest(event)"><i class="fas fa-rocket"></i> Generate Test Link & Notify</button>
+            <div id="onlineTestResult" style="margin-top:1rem"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-list"></i> Scheduled Tests</h3></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>ID</th><th>Name</th><th>Program</th><th>Roll No.</th><th>Test Date</th><th>Test Type</th><th>Test Status</th><th>Score</th><th>Actions</th></tr></thead>
+          <tbody id="scheduledTestsBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- Reschedule Requests Section -->
+      <!-- Absent Students - Reschedule Section -->
+        <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-header">
+                <h3><i class="fas fa-user-clock"></i> Absent Students (Eligible for Reschedule)</h3>
+                <button class="btn btn-secondary btn-sm" onclick="loadAbsentStudents()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table style="width:100%">
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Program</th><th>Original Test Date</th><th>Status</th><th>Action</th>
+                    </thead>
+                    <tbody id="absentStudentsBody">
+                        <tr><td colspan="6" style="text-align:center;padding:2rem">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> 
+    
+      </div>
+
+    <!-- ===== MERIT PAGE ===== -->
+    
+    <!-- ===== MERIT PAGE-NEW ===== -->
+    <div class="page" id="page-merit">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-trophy"></i> Merit List by Program</h3>
+                <div class="filters">
+                    <button class="filter-btn active" onclick="loadMeritListByProgram('all')">All Programs</button>
+                    <button class="filter-btn" onclick="loadMeritListByProgram('bscs')">BSCS</button>
+                    <button class="filter-btn" onclick="loadMeritListByProgram('bsai')">BSAI</button>
+                    <button class="filter-btn" onclick="loadMeritListByProgram('bscys')">BSCyS</button>
+                    <button class="filter-btn" onclick="loadMeritListByProgram('bsse')">BSSE</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="meritStats" style="margin-bottom:1rem; padding:.75rem; background:var(--blue-lt); border-radius:8px; display:none"></div>
+                <div class="table-wrap">
+                    <table style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Roll No</th>
+                                <th>Name</th>
+                                <th>Program</th>
+                                <th>Academic %</th>
+                                <th>Test %</th>
+                                <th>Aggregate</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="meritBody">
+                            <tr><td colspan="9" style="text-align:center;padding:2rem">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ANALYTICS PAGE ===== -->
+    <div class="page" id="page-analytics">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>Weekly Lead Trend</h3></div>
+          <div class="card-body"><div class="chart-container"><canvas id="weeklyChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Program vs Test Pass Rate</h3></div>
+          <div class="card-body"><div class="chart-container"><canvas id="passRateChart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Detailed Program Test Statistics</h3></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Program</th><th>Total Leads</th><th>Appeared</th><th>Passed</th><th>Failed</th><th>Pass Rate</th></tr></thead>
+          <tbody id="analyticsBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- page-content -->
+</div><!-- main -->
+
+<!-- ===== LEAD DETAIL PANEL ===== -->
+<div class="detail-panel" id="detailPanel">
+  <div class="panel-header">
+    <h3>Lead Detail</h3>
+    <button class="modal-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-section">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem" id="panelInitial">A</div>
+      <div><div id="panelName" style="font-weight:700;font-size:1.1rem"></div><div id="panelProgram" style="font-size:.8rem;color:var(--text-muted)"></div></div>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="panelStatusBtns"></div>
+  </div>
+  <div class="panel-section">
+    <h4>Contact Info</h4>
+    <div class="info-grid" id="panelInfo"></div>
+  </div>
+  <div class="panel-section">
+    <h4>Actions</h4>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="panelActions"></div>
+  </div>
+  <div class="panel-section">
+    <h4>Add Note</h4>
+    <textarea id="noteInput" rows="2" style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit" placeholder="Add a note..."></textarea>
+    <button class="btn btn-secondary btn-sm" style="margin-top:.5rem" onclick="addNote()">Save Note</button>
+  </div>
+  <div class="panel-section">
+    <h4>Interaction History</h4>
+    <div class="timeline" id="panelTimeline"></div>
+  </div>
+    <div class="panel-section" id="panelPriorTests">
+    <h4><i class="fas fa-certificate"></i> Prior Test Records</h4>
+    <div id="priorTestsContent">Loading...</div>
+  </div>
+</div>
+
+<!-- ===== SCHEDULE MODAL ===== -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fas fa-calendar-alt"></i> Schedule Test</h3><button class="modal-close" onclick="closeModal('scheduleModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Lead ID</label><input type="number" id="modalLeadId" readonly style="background:var(--bg)"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Test Date</label><input type="date" id="modalTestDate"></div>
+        <div class="form-group"><label>Test Time</label><input type="time" id="modalTestTime" value="09:00"></div>
+      </div>
+      <div class="form-group"><label>Venue</label><input type="text" id="modalVenue" placeholder="Hall / Room / Campus"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitSchedule()"><i class="fas fa-paper-plane"></i> Schedule & Notify</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD LEAD MODAL ===== -->
+<div class="modal-overlay" id="addLeadModal">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fas fa-user-plus"></i> Add Lead</h3><button class="modal-close" onclick="closeModal('addLeadModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Full Name *</label><input type="text" id="aName"></div>
+        <div class="form-group"><label>Email *</label><input type="email" id="aEmail"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone *</label><input type="tel" id="aPhone"></div>
+        <div class="form-group"><label>CNIC *</label><input type="text" id="aCnic"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Father Name *</label><input type="text" id="aFather"></div>
+        <div class="form-group"><label>Education *</label>
+          <select id="aEdu"><option value="matric">Matric</option><option value="fsc">F.Sc</option><option value="a-levels">A-Levels</option><option value="bachelor">Bachelor</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Program *</label>
+          <select id="aProgram"><option value="bscs">BSCS</option><option value="bsai">BSAI</option><option value="bscys">BSCyS</option><option value="bsse">BSSE</option><option value="bba">BBA</option><option value="mba">MBA</option></select>
+        </div>
+        <div class="form-group"><label>Source</label>
+          <select id="aSource"><option value="website">Website</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="friend">Friend</option><option value="other">Other</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Address *</label><textarea id="aAddress" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addLeadModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddLead()"><i class="fas fa-save"></i> Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let allLeads = [], dashStats = null, currentPanelLeadId = null;
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = function() {
+  const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
+  if (!user.id) { location.href = 'admin.html'; return; }
+  document.getElementById('userName').textContent = user.full_name || user.username;
+  document.getElementById('userRole').textContent = user.role;
+  document.getElementById('userInitial').textContent = (user.full_name || 'A')[0].toUpperCase();
+  loadDashboard();
+  loadLeads();
+};
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.currentTarget && event.currentTarget.classList.add('active');
+  const titles = {dashboard:'Dashboard',leads:'All Leads',pipeline:'Lead Pipeline',schedule:'Test Scheduling',merit:'Merit List',analytics:'Analytics', seats:'Seat Limits',
+    students:'Students by Program'};
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  if (name === 'merit') loadMeritListByProgram('all');
+  if (name === 'schedule') 
+      {
+      populateLeadDropdowns();
+      loadAbsentStudents();  // Add this line
+      }
+    if (name === 'pipeline') renderPipeline();
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'seats') loadSeatLimits();  // SEAT LIMIT
+  if (name === 'students') loadStudents();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  await refreshDashboardStats();
+  const r = await fetch('api.php?action=dashboard_stats');
+  const data = await r.json();
+  if (!data.success) return;
+  dashStats = data.stats;
+  const s = dashStats;
+
+  document.getElementById('s-total').textContent = s.total_leads;
+  document.getElementById('s-enrolled').textContent = s.enrolled;
+  document.getElementById('s-selected').textContent = s.selected;
+  document.getElementById('s-tests').textContent = s.tests_scheduled;
+  document.getElementById('s-passed').textContent = s.tests_passed;
+  document.getElementById('s-rate').textContent = s.acceptance_rate + '%';
+  document.getElementById('s-today').textContent = s.leads_today;
+
+  renderCharts(s);
+  renderTestStats(s.test_stats);
+}
+
+function renderCharts(s) {
+  // Monthly
+  const monthly = s.monthly_leads || [];
+  new Chart(document.getElementById('monthlyChart'), {
+    type:'line', data:{
+      labels: monthly.map(m => m.month),
+      datasets:[{label:'Leads',data:monthly.map(m=>m.count),borderColor:'#0f4c81',backgroundColor:'rgba(15,76,129,.1)',fill:true,tension:.4,pointBackgroundColor:'#0f4c81'}]
+    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+
+  // Source Pie
+  const sources = s.by_source || [];
+  const sColors = ['#0f4c81','#7c3aed','#e63946','#f4a261','#2dc653','#0d9488','#94a3b8'];
+  new Chart(document.getElementById('sourceChart'), {
+    type:'doughnut', data:{
+      labels:sources.map(x=>x.source),
+      datasets:[{data:sources.map(x=>x.count),backgroundColor:sColors,borderWidth:0}]
+    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}
+  });
+
+  // Program Bar
+  const programs = s.by_program || [];
+  new Chart(document.getElementById('programChart'), {
+    type:'bar', data:{
+      labels:programs.map(x=>x.program.toUpperCase()),
+      datasets:[{label:'Leads',data:programs.map(x=>x.count),backgroundColor:'#0f4c81',borderRadius:6}]
+    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+}
+
+
+function renderTestStats() {
+    const body = document.getElementById('testStatsBody');
+    if (!body) return;
+    
+    // If allLeads is not loaded yet
+    if (!allLeads || allLeads.length === 0) {
+        body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:1rem">Loading test data...</p>';
+        return;
+    }
+    
+    // Calculate statistics from allLeads
+    const programStats = {};
+    const programs = ['bscs', 'bsai', 'bscys', 'bsse'];
+    
+    programs.forEach(prog => {
+        programStats[prog] = {
+            program: prog,
+            total: 0,
+            passed: 0,
+            failed: 0,
+            pending: 0
+        };
+    });
+    
+    allLeads.forEach(lead => {
+        const prog = lead.interested_program;
+        if (!prog || !programStats[prog]) return;
+        
+        programStats[prog].total++;
+        
+        if (lead.test_status === 'passed') {
+            programStats[prog].passed++;
+        } else if (lead.test_status === 'failed') {
+            programStats[prog].failed++;
+        } else {
+            programStats[prog].pending++;
+        }
+    });
+    
+    // Filter programs with data
+    const statsToShow = Object.values(programStats).filter(s => s.total > 0);
+    
+    if (statsToShow.length === 0) {
+        body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:1rem">No test data yet. Complete tests to see statistics.</p>';
+        return;
+    }
+    
+    body.innerHTML = statsToShow.map(s => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border)">
+            <span style="font-weight:600;font-size:.85rem">${s.program.toUpperCase()}</span>
+            <div style="display:flex;gap:.5rem">
+                <span class="badge badge-pending">Total: ${s.total}</span>
+                <span class="badge badge-passed">Pass: ${s.passed}</span>
+                <span class="badge badge-failed">Fail: ${s.failed}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ============================================================
+// LEADS
+// ============================================================
+async function loadLeads() {
+  const status = document.getElementById('statusFilter')?.value || '';
+  const source = document.getElementById('sourceFilter')?.value || '';
+  const program = document.getElementById('programFilter')?.value || '';
+  let url = `api.php?action=get_leads&limit=500`;
+  if (status) url += `&status=${status}`;
+  if (source) url += `&source=${source}`;
+  if (program) url += `&program=${program}`;
+  
+  try {
+    const r = await fetch(url);
+    const data = await r.json();
+    
+    if (data.success) {
+      allLeads = data.leads;
+      document.getElementById('leadsCount').textContent = allLeads.length;
+      renderLeadsTable(allLeads);
+      populateLeadDropdowns();
+      renderScheduledTests();
+      renderPipeline();
+      await refreshDashboardStats();
+      renderTestStats();  // Remove parameter - it will use allLeads internally
+    }
+  } catch(e) {
+    console.error('Error loading leads:', e);
+    document.getElementById('leadsTableBody').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:red">Error loading leads. Check console.</td></tr>';
+  }
+}
+
+// function after loadLeads() function
+async function refreshDashboardStats() {
+    const r = await fetch('api.php?action=dashboard_stats');
+    const data = await r.json();
+    if (!data.success) return;
+    dashStats = data.stats;
+    const s = dashStats;
+
+    document.getElementById('s-total').textContent = s.total_leads || 0;
+    document.getElementById('s-enrolled').textContent = s.enrolled || 0;
+    document.getElementById('s-selected').textContent = s.selected || 0;
+    document.getElementById('s-tests').textContent = s.tests_scheduled || 0;
+    document.getElementById('s-passed').textContent = s.tests_passed || 0;
+    document.getElementById('s-rate').textContent = (s.acceptance_rate || 0) + '%';
+    document.getElementById('s-today').textContent = s.leads_today || 0;
+
+    renderTestStats();  // No parameter - reads from allLeads
+    renderAnalytics();
+}
+
+function filterLeads() {
+  const search = document.getElementById('globalSearch').value.toLowerCase();
+  const status = document.getElementById('statusFilter')?.value || '';
+  const source = document.getElementById('sourceFilter')?.value || '';
+  const program = document.getElementById('programFilter')?.value || '';
+  let filtered = allLeads.filter(l => {
+    const matchSearch = !search || l.full_name.toLowerCase().includes(search) || l.email.toLowerCase().includes(search) || (l.phone||'').includes(search);
+    const matchStatus = !status || l.status === status;
+    const matchSource = !source || l.source === source;
+    const matchProgram = !program || l.interested_program === program;
+    return matchSearch && matchStatus && matchSource && matchProgram;
+  });
+  renderLeadsTable(filtered);
+}
+
+const sourceIcons = {facebook:'<i class="fab fa-facebook" style="color:#1877f2"></i>',instagram:'<i class="fab fa-instagram" style="color:#e1306c"></i>',website:'<i class="fas fa-globe" style="color:#16a34a"></i>',youtube:'<i class="fab fa-youtube" style="color:#ff0000"></i>',twitter:'<i class="fab fa-twitter" style="color:#1da1f2"></i>',friend:'<i class="fas fa-user-friends" style="color:#f59e0b"></i>',newspaper:'<i class="fas fa-newspaper" style="color:#64748b"></i>',other:'<i class="fas fa-ellipsis-h" style="color:#94a3b8"></i>'};
+
+function renderLeadsTable(leads) {
+  const body = document.getElementById('leadsTableBody');
+  document.getElementById('leadsInfo').textContent = `Showing ${leads.length} leads`;
+  if (!leads.length) { body.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:3rem;color:var(--text-muted)">No leads found</td></tr>'; return; }
+
+  body.innerHTML = leads.map(l => `
+  <tr>
+    <td><code style="font-size:.75rem;color:var(--text-muted)">#${l.id}</code></td>
+    <td>
+      ${l.profile_picture ? 
+        `<img src="${l.profile_picture}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)" 
+         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(l.full_name)}&background=0f4c81&color=fff&size=40'">` : 
+        `<div style="width:40px;height:40px;border-radius:50%;background:var(--navy);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">${l.full_name.charAt(0)}</div>`
+      }
+    </td>
+    <td><div style="font-weight:600">${l.full_name}</div><div style="font-size:.75rem;color:var(--text-muted)">${l.email}</div></td>
+    <td><div style="font-size:.85rem">${l.phone||'—'}</div></td>
+    <td><span style="font-weight:700;font-size:.8rem">${(l.interested_program||'').toUpperCase()}</span></td>
+    <td>${sourceIcons[l.source]||''} <span style="font-size:.8rem">${l.source||'—'}</span></td>
+    <td><span class="badge badge-${l.status}">${l.status?.replace('_',' ')}</span></td>
+    <td><span class="score-pill"><i class="fas fa-star" style="font-size:.6rem"></i> ${l.score||0}</span></td>
+    <td><span class="badge badge-${l.test_status||'pending'}">${(l.test_status||'pending').replace('_',' ')}</span></td>
+    <td style="font-size:.8rem;color:var(--text-muted)">${l.created_at?.split(' ')[0]||'—'}</td>
+    <td>
+      <button class="btn btn-secondary btn-sm" onclick="openPanel(${l.id})"><i class="fas fa-eye"></i></button>
+      <button class="btn btn-warn btn-sm" onclick="quickSchedule(${l.id})"><i class="fas fa-calendar"></i></button>
+    </td>
+  </tr>
+`).join('');
+}
+
+// ============================================================
+// LEAD DETAIL PANEL
+// ============================================================
+async function openPanel(id) {
+  currentPanelLeadId = id;
+  document.getElementById('detailPanel').classList.add('open');
+  const r = await fetch(`api.php?action=get_lead&id=${id}`);
+  const data = await r.json();
+  if (!data.success) return;
+  const l = data.lead;
+
+
+  
+  //===========================NEW FOR NTS MARKS API=========================
+
+  // Load prior test records
+    const priorTestDiv = document.getElementById('panelPriorTests');
+    const ptResponse = await fetch(`api.php?action=get_prior_tests&lead_id=${id}`);
+    const ptData = await ptResponse.json();
+
+    if (ptData.success && ptData.records.length > 0) {
+        priorTestDiv.innerHTML = `
+            <h4>Prior Test Records</h4>
+            ${ptData.records.map(r => `
+                <div class="info-row" style="padding:8px 0; border-bottom:1px solid var(--border)">
+                    <div><strong>${r.test_name.toUpperCase()}</strong></div>
+                    <div>Score: ${r.percentage}% (${r.obtained_marks}/${r.total_marks})</div>
+                    <div>
+                        ${r.is_verified ? 
+                            '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified</span>' : 
+                            `<button class="btn btn-primary btn-sm" onclick="verifyPriorTest(${r.id}, ${l.id})"><i class="fas fa-shield-alt"></i> Verify</button>`
+                        }
+                    </div>
+                </div>
+            `).join('')}
+        `;
+    } else {
+        priorTestDiv.innerHTML = '<h4>Prior Test Records</h4><p>No prior test records submitted</p>';
+    }
+
+  //===========================NTS ENDS======================================
+
+  //document.getElementById('panelInitial').textContent = l.full_name[0].toUpperCase();
+  // Replace the panelInitial line with:
+  const profileImg = l.profile_picture ? 
+    `<img src="${l.profile_picture}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">` : 
+    `<div style="width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem">${l.full_name[0].toUpperCase()}</div>`;
+
+  document.getElementById('panelInitial').innerHTML = profileImg;
+  document.getElementById('panelName').textContent = l.full_name;
+  document.getElementById('panelProgram').textContent = `${(l.interested_program||'').toUpperCase()} · Score: ${l.score||0}`;
+
+  document.getElementById('panelInfo').innerHTML = `
+    <div class="info-item"><div class="label">Email</div><div class="value" style="font-size:.8rem">${l.email}</div></div>
+    <div class="info-item"><div class="label">Phone</div><div class="value">${l.phone||'—'}</div></div>
+    <div class="info-item"><div class="label">CNIC</div><div class="value" style="font-size:.8rem">${l.cnic||'—'}</div></div>
+    <div class="info-item"><div class="label">Father</div><div class="value" style="font-size:.8rem">${l.father_name||'—'}</div></div>
+    <div class="info-item"><div class="label">Education</div><div class="value">${l.education||'—'}</div></div>
+    <div class="info-item"><div class="label">Source</div><div class="value">${l.source||'—'}</div></div>
+    <div class="info-item"><div class="label">Test Status</div><div class="value"><span class="badge badge-${l.test_status||'pending'}">${l.test_status||'pending'}</span></div></div>
+    <div class="info-item"><div class="label">Roll No.</div><div class="value" style="font-family:'JetBrains Mono',monospace;font-size:.8rem">${l.test_roll_number||'—'}</div></div>
+  `;
+
+  const statuses = ['new','contacted','applied','test_scheduled','selected','enrolled','rejected','absent'];
+  document.getElementById('panelStatusBtns').innerHTML = statuses.map(s =>
+    `<button class="btn btn-sm ${l.status===s?'btn-primary':'btn-secondary'}" onclick="updateStatus(${l.id},'${s}')">${s.replace('_',' ')}</button>`
+  ).join('');
+
+  document.getElementById('panelActions').innerHTML = `
+    <button class="btn btn-warn btn-sm" onclick="quickSchedule(${l.id})"><i class="fas fa-calendar"></i> Ext. Test</button>
+    <button class="btn btn-purple btn-sm" onclick="document.getElementById('onlineTestLead').value=${l.id};showPage('schedule')"><i class="fas fa-laptop"></i> Online Test</button>
+  `;
+
+  const tl = document.getElementById('panelTimeline');
+  if (!data.interactions?.length) { tl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0">No interactions yet</p>'; }
+  else {
+    const icons = {email:'<i class="fas fa-envelope"></i>',whatsapp:'<i class="fab fa-whatsapp"></i>',note:'<i class="fas fa-sticky-note"></i>',status_change:'<i class="fas fa-exchange-alt"></i>',test_scheduled:'<i class="fas fa-calendar-check"></i>',score_change:'<i class="fas fa-star"></i>'};
+    tl.innerHTML = data.interactions.map(i => `
+      <div class="timeline-item">
+        <div class="timeline-icon tl-${i.action_type}">${icons[i.action_type]||'<i class="fas fa-circle"></i>'}</div>
+        <div class="timeline-content">
+          <div class="action">${i.description}</div>
+          <div class="time">${i.created_at}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+//=================NEW FUNCTION FOR NTS=====================
+
+async function verifyPriorTest(recordId, leadId) {
+    const r = await fetch('api.php?action=verify_prior_test', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({record_id: recordId, lead_id: leadId})
+    });
+    const data = await r.json();
+    if (data.success) {
+        notify('Prior test verified and added to merit calculation', 'success');
+        openPanel(leadId);
+        loadMeritList();
+    } else {
+        notify(data.error, 'error');
+    }
+}
+
+//====================NTS FUNCTION ENDS==========================
+
+function closePanel() { document.getElementById('detailPanel').classList.remove('open'); }
+
+async function updateStatus(id, status) {
+    const r = await fetch('api.php?action=update_status', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_id:id,status})});
+    const data = await r.json();
+    if (data.success) { 
+        notify('Status updated to '+status,'success'); 
+        openPanel(id); 
+        loadLeads();
+        refreshDashboardStats();  // ADD THIS LINE
+    }
+    else notify(data.error,'error');
+}
+
+async function addNote() {
+  const note = document.getElementById('noteInput').value.trim();
+  if (!note || !currentPanelLeadId) return;
+  await fetch('api.php?action=add_note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_id:currentPanelLeadId,note})});
+  document.getElementById('noteInput').value = '';
+  openPanel(currentPanelLeadId);
+  notify('Note saved','success');
+}
+
+// ============================================================
+// SCHEDULE TEST
+// ============================================================
+function quickSchedule(id) {
+  document.getElementById('modalLeadId').value = id;
+  document.getElementById('scheduleModal').classList.add('show');
+}
+
+async function submitSchedule() {
+    const data = {
+        lead_id: document.getElementById('modalLeadId').value,
+        test_date: document.getElementById('modalTestDate').value,
+        test_time: document.getElementById('modalTestTime').value,
+        venue: document.getElementById('modalVenue').value
+    };
+    if (!data.test_date || !data.venue) { notify('Fill all fields','error'); return; }
+    const r = await fetch('api.php?action=send_test_schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const result = await r.json();
+    if (result.success) { 
+        notify(`Scheduled! Roll: ${result.roll_number} | WA: ${result.notifications.whatsapp} | Email: ${result.notifications.email}`,'success'); 
+        closeModal('scheduleModal'); 
+        loadLeads();
+        refreshDashboardStats();  // ADD THIS LINE
+        renderScheduledTests();
+    }
+    else notify(result.error,'error');
+}
+
+async function scheduleExternalTest() {
+  const btn = event.currentTarget;
+  const originalHtml = btn.innerHTML;
+  
+  // Show loading state
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scheduling...';
+  btn.disabled = true;
+  
+  const data = {
+    lead_id: document.getElementById('schedLead').value,
+    test_date: document.getElementById('schedDate').value,
+    test_time: document.getElementById('schedTime').value,
+    venue: document.getElementById('schedVenue').value
+  };
+  
+  if (!data.lead_id || !data.test_date || !data.venue) { 
+    notify('Fill all fields','error');
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    return; 
+  }
+  
+  const r = await fetch('api.php?action=send_test_schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const result = await r.json();
+  
+  // Restore button
+  btn.innerHTML = originalHtml;
+  btn.disabled = false;
+  
+  if (result.success) { 
+    notify(`✅ Scheduled! Roll: ${result.roll_number}. WA: ${result.notifications.whatsapp}, Email: ${result.notifications.email}`,'success'); 
+    loadLeads(); 
+    refreshDashboardStats(); 
+    renderScheduledTests(); 
+  } else notify(result.error,'error');
+}
+
+async function createOnlineTest() {
+  const btn = event.currentTarget;
+  const originalHtml = btn.innerHTML;
+  
+  // Show loading state
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating test link...';
+  btn.disabled = true;
+  
+  const lead_id = document.getElementById('onlineTestLead').value;
+  if (!lead_id) { 
+    notify('Select a lead first','error');
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    return; 
+  }
+  
+  const r = await fetch('api.php?action=create_online_test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_id})});
+  const result = await r.json();
+  const el = document.getElementById('onlineTestResult');
+  
+  // Restore button
+  btn.innerHTML = originalHtml;
+  btn.disabled = false;
+  
+  if (result.success) {
+    el.innerHTML = `<div style="background:#dcfce7;color:#166534;padding:1rem;border-radius:8px;font-size:.85rem">
+      ✅ Online test created!<br>
+      Roll No: <strong>${result.roll_number}</strong><br>
+      <a href="${result.test_link}" target="_blank" style="word-break:break-all;color:var(--primary)">${result.test_link}</a><br>
+      WA: ${result.notifications.whatsapp} | Email: ${result.notifications.email}
+    </div>`;
+    loadLeads();
+    refreshDashboardStats();
+    renderScheduledTests();
+  } else {
+    el.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:1rem;border-radius:8px;font-size:.85rem">❌ ${result.error}</div>`;
+  }
+}
+
+function renderScheduledTests() {
+  const body = document.getElementById('scheduledTestsBody');
+  const testLeads = allLeads.filter(l => l.test_status && l.test_status !== 'pending');
+  if (!testLeads.length) { body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted)">No tests scheduled yet</td></tr>'; return; }
+  body.innerHTML = testLeads.map(l => `
+    <tr>
+      <td><code style="font-size:.75rem">#${l.id}</code></td>
+      <td style="font-weight:600">${l.full_name}</td>
+      <td>${(l.interested_program||'').toUpperCase()}</td>
+      <td><code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">${l.test_roll_number||'—'}</code></td>
+      <td>${l.test_date||'—'}</td>
+      <td><span class="badge badge-pending">${l.test_type||'external'}</span></td>
+      <td><span class="badge badge-${l.test_status}">${l.test_status}</span></td>
+      <td>${l.test_score!=null ? `<strong style="font-family:'JetBrains Mono',monospace">${l.test_score}%</strong>` : '—'}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="openPanel(${l.id})"><i class="fas fa-eye"></i></button></td>
+    </tr>
+  `).join('');
+}
+
+
+// ============================================================
+// MERIT LIST - WORKING VERSION 
+// ============================================================
+
+//=======================NEW-MERIT LIST FUNCTION===============
+// ============================================================
+// MERIT LIST BY PROGRAM
+// ============================================================
+let currentMeritProgram = 'all';
+
+async function loadMeritListByProgram(program) {
+    currentMeritProgram = program;
+    
+    // Update active button
+    document.querySelectorAll('#page-merit .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase() === program || (program === 'all' && btn.textContent === 'All Programs')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    const r = await fetch(`api.php?action=merit_list${program !== 'all' ? '&program=' + program : ''}`);
+    const data = await r.json();
+    const body = document.getElementById('meritBody');
+    const statsDiv = document.getElementById('meritStats');
+    
+    if (!data.success || !data.merit_list || data.merit_list.length === 0) {
+        body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted)">No test results yet for this program</td></tr>';
+        statsDiv.style.display = 'none';
+        return;
+    }
+    
+    // Show statistics
+    const total = data.merit_list.length;
+    const passed = data.merit_list.filter(s => s.test_status === 'passed').length;
+    const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+    
+    statsDiv.style.display = 'block';
+    statsDiv.innerHTML = `
+        <i class="fas fa-chart-line"></i> 
+        <strong>${program === 'all' ? 'All Programs' : program.toUpperCase()}</strong> | 
+        Total: ${total} | Passed: ${passed} | Pass Rate: ${passRate}%
+        <span style="float:right">🏆 Top 3 will be offered admission</span>
+    `;
+    
+    const medalIcons = ['🥇', '🥈', '🥉'];
+    
+    body.innerHTML = data.merit_list.map((l, index) => {
+        const rank = l.rank || (index + 1);
+        const aggregate = l.aggregate ? parseFloat(l.aggregate).toFixed(2) + '%' : '—';
+        const academicPct = l.academic_percentage ? parseFloat(l.academic_percentage).toFixed(1) + '%' : '—';
+        const testPct = l.test_score ? parseFloat(l.test_score).toFixed(1) + '%' : '—';
+        
+        let rowClass = '';
+        let rankDisplay = rank;
+        if (rank === 1) { rowClass = 'rank-1'; rankDisplay = '🥇 1'; }
+        else if (rank === 2) { rowClass = 'rank-2'; rankDisplay = '🥈 2'; }
+        else if (rank === 3) { rowClass = 'rank-3'; rankDisplay = '🥉 3'; }
+        
+        return `
+            <tr class="${rowClass}">
+                <td><strong>#${rankDisplay}</strong></td>
+                <td><code>${l.test_roll_number || '—'}</code></td>
+                <td style="font-weight:600">${l.full_name}</td>
+                <td><span class="badge badge-primary">${(l.interested_program || '').toUpperCase()}</span></td>
+                <td>${academicPct}</td>
+                <td>${testPct}</td>
+                <td><strong style="color:${rank <= 3 ? '#b8891a' : '#0f4c81'}">${aggregate}</strong></td>
+                <td><span class="badge badge-${l.test_status || 'pending'}">${(l.test_status || 'pending')}</span></td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="sendMeritOffer(${l.id}, '${l.full_name}', '${l.interested_program}')">
+                        <i class="fas fa-gift"></i> Offer
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="viewStudentMerit(${l.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Send merit offer to selected student
+async function sendMeritOffer(leadId, name, program) {
+    const deadline = prompt(`Enter deadline for ${name} to confirm admission (YYYY-MM-DD):`, 
+        new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0]);
+    
+    if (!deadline) return;
+    
+    const visitBy = prompt(`Enter "Visit by" date for ${name} (YYYY-MM-DD):`,
+        new Date(Date.now() + 3*24*60*60*1000).toISOString().split('T')[0]);
+    
+    if (!visitBy) return;
+    
+    const btn = event.target;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    btn.disabled = true;
+    
+    const r = await fetch('api.php?action=send_merit_offer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId, deadline: deadline, visit_by: visitBy })
+    });
+    
+    const data = await r.json();
+    
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    
+    if (data.success) {
+        notify(`✅ Offer sent to ${name}! WhatsApp: ${data.notifications.whatsapp}, Email: ${data.notifications.email}`, 'success');
+        loadMeritListByProgram(currentMeritProgram);
+    } else {
+        notify(`❌ Failed: ${data.error}`, 'error');
+    }
+}
+
+// View student details from merit list
+async function viewStudentMerit(leadId) {
+    openPanel(leadId);
+}
+
+// Export merit list as CSV
+function exportMeritList() {
+    const table = document.getElementById('meritBody');
+    const rows = table.querySelectorAll('tr');
+    let csv = 'Rank,Roll No,Name,Program,Academic %,Test %,Aggregate,Status\n';
+    
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td');
+        if (cols.length > 0) {
+            const rowData = [];
+            cols.forEach(col => rowData.push('"' + col.innerText.replace(/[🥇🥈🥉]/g, '').trim() + '"'));
+            csv += rowData.join(',') + '\n';
+        }
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `merit_list_${currentMeritProgram}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    notify('Merit list exported!', 'success');
+}
+
+// Add export button to merit card header
+function addExportButton() {
+    const cardHeader = document.querySelector('#page-merit .card-header');
+    if (cardHeader && !document.getElementById('exportMeritBtn')) {
+        const exportBtn = document.createElement('button');
+        exportBtn.id = 'exportMeritBtn';
+        exportBtn.className = 'btn btn-secondary btn-sm';
+        exportBtn.innerHTML = '<i class="fas fa-download"></i> Export CSV';
+        exportBtn.onclick = exportMeritList;
+        cardHeader.appendChild(exportBtn);
+    }
+}
+
+// Call this after page loads
+setTimeout(addExportButton, 1000);
+
+// ============================================================
+// PIPELINE
+// ============================================================
+function renderPipeline() {
+    const stages = [
+        {key: 'new', label: 'New Lead', color: '#0f4c81'},
+        {key: 'contacted', label: 'Contacted', color: '#7c3aed'},
+        {key: 'applied', label: 'Applied', color: '#f4a261'},
+        {key: 'test_scheduled', label: 'Test Scheduled', color: '#0d9488'},
+        {key: 'selected', label: 'Selected', color: '#16a34a'},
+        {key: 'enrolled', label: 'Enrolled', color: '#064e3b'},
+        {key: 'rejected', label: 'Rejected', color: '#e63946'},
+        {key: 'absent', label: 'Absent', color: '#f59e0b'}
+    ];
+    
+    // Count from allLeads (which comes from leads table)
+    const counts = {};
+    allLeads.forEach(lead => {
+        const status = lead.status;
+        if (!counts[status]) counts[status] = 0;
+        counts[status]++;
+    });
+    
+    const pipelineDiv = document.getElementById('pipelineView');
+    if (!pipelineDiv) return;
+    
+    pipelineDiv.innerHTML = stages.map(stage => `
+        <div class="pipeline-stage">
+            <div class="p-count" style="color:${stage.color}">${counts[stage.key] || 0}</div>
+            <div class="p-label">${stage.label}</div>
+            <div class="p-bar" style="background:${stage.color}20">
+                <div style="height:100%;background:${stage.color};border-radius:2px;width:${allLeads.length > 0 ? ((counts[stage.key] || 0) / allLeads.length) * 100 : 0}%"></div>
+            </div>
+        </div>
+    `).join('');
+    
+    renderPipelineTable();
+}
+
+function renderPipelineTable() {
+    const filter = document.getElementById('pipelineFilter').value;
+    let leads = allLeads;
+    
+    if (filter) {
+        leads = allLeads.filter(l => l.status === filter);
+    }
+    
+    const body = document.getElementById('pipelineTableBody');
+    const now = new Date();
+    
+    if (!leads.length) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No leads in this stage</td></tr>';
+        return;
+    }
+    
+    body.innerHTML = leads.slice(0, 100).map(l => {
+        const days = Math.floor((now - new Date(l.created_at)) / 86400000);
+        const testBadge = l.test_status === 'passed' ? '<span class="badge badge-passed">Passed</span>' : 
+                          (l.test_status === 'failed' ? '<span class="badge badge-failed">Failed</span>' : 
+                          (l.test_status === 'scheduled' ? '<span class="badge badge-scheduled">Scheduled</span>' : '—'));
+        
+        return `
+            <tr>
+                <td style="font-weight:600">${l.full_name}</td>
+                <td>${(l.interested_program || '').toUpperCase()}</td>
+                <td>${sourceIcons[l.source] || ''} ${l.source || '—'}</td>
+                <td><span class="badge badge-${l.status}">${l.status?.replace('_', ' ')}</span></td>
+                <td>${testBadge}</td>
+                <td><span class="score-pill">${l.score || 0}</span></td>
+                <td>${days}d</td>
+                <td><button class="btn btn-secondary btn-sm" onclick="openPanel(${l.id})"><i class="fas fa-eye"></i></button></td>
+            </tr>
+        `;
+    }).join('');
+}
+// ============================================================
+// ANALYTICS
+// ============================================================
+
+function renderAnalytics() {
+    if (!dashStats) return;
+    const s = dashStats;
+
+    // Weekly Chart
+    const weekly = s.weekly_leads || [];
+    const weeklyCtx = document.getElementById('weeklyChart');
+    if (weeklyCtx) {
+        // Destroy existing chart if exists
+        if (window.weeklyChartInstance) window.weeklyChartInstance.destroy();
+        
+        window.weeklyChartInstance = new Chart(weeklyCtx, {
+            type: 'bar',
+            data: {
+                labels: weekly.map(w => w.date),
+                datasets: [{
+                    label: 'Leads',
+                    data: weekly.map(w => w.count),
+                    backgroundColor: '#0f4c81',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Pass Rate Chart
+    const ts = s.test_stats || [];
+    const passRateCtx = document.getElementById('passRateChart');
+    if (passRateCtx) {
+        if (window.passRateChartInstance) window.passRateChartInstance.destroy();
+        
+        window.passRateChartInstance = new Chart(passRateCtx, {
+            type: 'bar',
+            data: {
+                labels: ts.map(t => t.program.toUpperCase()),
+                datasets: [
+                    { label: 'Appeared', data: ts.map(t => t.appeared), backgroundColor: '#dbeafe' },
+                    { label: 'Passed', data: ts.map(t => t.passed), backgroundColor: '#2dc653' },
+                    { label: 'Failed', data: ts.map(t => t.failed), backgroundColor: '#e63946' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Detailed Program Test Statistics Table
+    const body = document.getElementById('analyticsBody');
+    if (!body) return;
+    
+    if (!ts.length || ts.every(t => t.total === 0)) {
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No test data available</td></tr>';
+        return;
+    }
+    
+    body.innerHTML = ts.map(t => `
+        <tr>
+            <td style="font-weight:700">${t.program.toUpperCase()}</td>
+            <td>${t.total || 0}</td>
+            <td>${t.appeared || 0}</td>
+            <td style="color:var(--success);font-weight:600">${t.passed || 0}</td>
+            <td style="color:var(--accent);font-weight:600">${t.failed || 0}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:.5rem">
+                    <div style="flex:1;background:#e2e8f0;border-radius:4px;height:8px">
+                        <div style="background:var(--success);height:100%;border-radius:4px;width:${t.pass_rate || 0}%"></div>
+                    </div>
+                    <span style="font-weight:700;font-family:'JetBrains Mono',monospace">${t.pass_rate || 0}%</span>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ============================================================
+// ADD LEAD
+// ============================================================
+async function submitAddLead() {
+    const data = {
+        full_name: document.getElementById('aName').value,
+        email: document.getElementById('aEmail').value,
+        phone: document.getElementById('aPhone').value,
+        cnic: document.getElementById('aCnic').value,
+        father_name: document.getElementById('aFather').value,
+        education: document.getElementById('aEdu').value,
+        interested_program: document.getElementById('aProgram').value,
+        source: document.getElementById('aSource').value,
+        address: document.getElementById('aAddress').value,
+    };
+    const r = await fetch('api.php?action=create_lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const result = await r.json();
+    if (result.success) { 
+        notify('Lead added! ID: '+result.lead_id,'success'); 
+        closeModal('addLeadModal'); 
+        loadLeads();
+        refreshDashboardStats();  // ADD THIS LINE
+    }
+    else notify(result.error,'error');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function populateLeadDropdowns() {
+  const opts = allLeads.map(l => `<option value="${l.id}">${l.full_name} — ${(l.interested_program||'').toUpperCase()} (#${l.id})</option>`).join('');
+  ['schedLead','onlineTestLead'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<option value="">— Select Lead —</option>' + opts;
+  });
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function notify(msg, type='success') {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = 'notif show ' + type;
+  setTimeout(() => n.classList.remove('show'), 4000);
+}
+
+function logout() { localStorage.removeItem('admin_user'); location.href='admin.html'; }
+
+
+
+//////////////////////////New///////////////////////////////////////
+
+// ============================================================
+// CSV IMPORT - LEADS
+// ============================================================
+async function importLeadsCSV() {
+  const file = document.getElementById('csvLeadsFile').files[0];
+  const result = document.getElementById('csvImportResult');
+  if (!file) { notify('Select a CSV file first','error'); return; }
+
+  result.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem"><i class="fas fa-spinner fa-spin"></i> Importing...</div>';
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const r = await fetch('api.php?action=import_leads_csv', { method:'POST', body:form });
+    const data = await r.json();
+    if (data.success) {
+      result.innerHTML = `<div style="background:#dcfce7;color:#166534;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">
+        ✅ <strong>Import Complete!</strong> ${data.imported} leads imported, ${data.skipped} skipped (duplicates), ${data.errors} errors.
+        ${data.error_list?.length ? '<br><small>Errors: ' + data.error_list.join(' | ') + '</small>' : ''}
+      </div>`;
+      loadLeads();
+    } else {
+      result.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">❌ ${data.error}</div>`;
+    }
+  } catch(e) {
+    result.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">❌ Network error: ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// IMPORT GOOGLE FORM RESULTS
+// ============================================================
+async function importGoogleFormResults() {
+  const file = document.getElementById('googleFormFile').files[0];
+  const result = document.getElementById('googleFormResult');
+  if (!file) { notify('Select a CSV file first','error'); return; }
+
+  result.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem"><i class="fas fa-spinner fa-spin"></i> Processing results...</div>';
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const r = await fetch('api.php?action=import_test_results', { method:'POST', body:form });
+    const data = await r.json();
+    if (data.success) {
+      result.innerHTML = `<div style="background:#dcfce7;color:#166534;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">
+        ✅ <strong>Import Complete!</strong> ${data.imported} results processed, ${data.matched} matched to existing leads. Notifications sent automatically. Batch: ${data.batch}
+      </div>`;
+      loadLeads();
+    } else {
+      result.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">❌ ${data.error}</div>`;
+    }
+  } catch(e) {
+    result.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// IMPORT NTS RESULTS
+// ============================================================
+async function importNTSResults() {
+  const file = document.getElementById('ntsFile').files[0];
+  const result = document.getElementById('ntsImportResult');
+  if (!file) { notify('Select a CSV file first','error'); return; }
+
+  result.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem"><i class="fas fa-spinner fa-spin"></i> Importing NTS results...</div>';
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const r = await fetch('api.php?action=import_nts', { method:'POST', body:form });
+    const data = await r.json();
+    if (data.success) {
+      result.innerHTML = `<div style="background:#dcfce7;color:#166534;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">
+        ✅ ${data.message}
+      </div>`;
+      loadLeads();
+    } else {
+      result.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">❌ ${data.error}</div>`;
+    }
+  } catch(e) {
+    result.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:8px;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// CSV TEMPLATE DOWNLOAD
+// ============================================================
+function downloadCSVTemplate() {
+  const headers = ['full_name','email','phone','cnic','father_name','address','education','interested_program','source','academic_percentage'];
+  const sample  = ['Ali Ahmed','ali@email.com','03001234567','12345-1234567-1','Ahmed Sr','Islamabad','fsc','bscs','facebook','72.5'];
+  const csv = headers.join(',') + '\n' + sample.join(',');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'leads_import_template.csv';
+  a.click();
+}
+
+// ============================================================
+// UPDATED MERIT LIST with aggregate
+// Replace the existing loadMeritList() function with this
+// ============================================================
+// ============================================================
+// MERIT LIST - FIXED VERSION
+// ============================================================
+async function loadMeritList() {
+    const prog = document.getElementById('meritProgram').value;
+    const r = await fetch(`api.php?action=merit_list${prog ? '&program=' + prog : ''}`);
+    const data = await r.json();
+    const body = document.getElementById('meritBody');
+    const seatsDiv = document.getElementById('seatsInfo');
+
+    if (!data.success || !data.merit_list || !data.merit_list.length) {
+        body.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text-muted)">No test results yet. Import results or complete online tests first.</td></tr>';
+        if (seatsDiv) seatsDiv.innerHTML = '';
+        return;
+    }
+
+    // Show seat info - only if seats data exists, otherwise skip
+    if (seatsDiv && data.seats) {
+        const progKey = prog || 'all';
+        if (prog && data.seats[prog]) {
+            const s = data.seats[prog];
+            seatsDiv.innerHTML = `<div style="background:#dbeafe;color:#1e40af;padding:.5rem 1rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem">
+                📊 ${prog.toUpperCase()} — Total Seats: <strong>${s.total_seats}</strong> | Available: <strong>${s.available_seats}</strong>
+            </div>`;
+        } else {
+            seatsDiv.innerHTML = '';
+        }
+    } else if (seatsDiv) {
+        seatsDiv.innerHTML = '';
+    }
+
+    const medalIcons = ['🥇', '🥈', '🥉'];
+    
+    body.innerHTML = data.merit_list.map((l, index) => {
+        const rank = l.rank || (index + 1);
+        
+        // Handle null/undefined values safely
+        const interPct = l.academic_percentage ? parseFloat(l.academic_percentage).toFixed(1) + '%' : '—';
+        const testPct = (l.test_score != null && l.test_score > 0) ? parseFloat(l.test_score).toFixed(1) + '%' : (l.nts_score ? parseFloat(l.nts_score).toFixed(1) + '%' : '—');
+        const aggPct = l.aggregate ? parseFloat(l.aggregate).toFixed(2) + '%' : '—';
+        const ntsBadge = (l.nts_verified == '1' || l.nts_verified == 1) ? '<span class="badge badge-passed" style="font-size:.7rem;margin-left:.3rem">NTS</span>' : '';
+        
+        return `<tr class="${rank <= 3 ? 'rank-' + rank : ''}">
+            <td><strong style="font-family:\'JetBrains Mono\',monospace">${rank <= 3 ? medalIcons[rank - 1] : '#' + rank}</strong></td>
+            <td><code style="font-size:.8rem">${l.test_roll_number || '—'}</code></td>
+            <td style="font-weight:600">${l.full_name || '—'}</td>
+            <td>${(l.interested_program || '').toUpperCase()}</td>
+            <td>${interPct}</td>
+            <td>${testPct} ${ntsBadge}</td>
+            <td><strong style="font-family:\'JetBrains Mono\',monospace;color:var(--primary)">${aggPct}</strong></td>
+            <td><span class="badge badge-${l.test_status || 'pending'}">${l.test_status || 'pending'}</span></td>
+            <td><span class="badge badge-${l.status || 'new'}">${(l.status || 'new').replace('_', ' ')}</span></td>
+            <td style="white-space:nowrap">
+                <button class="btn btn-success btn-sm" onclick="sendSingleOffer(${l.id})"><i class="fas fa-paper-plane"></i> Offer</button>
+                <button class="btn btn-primary btn-sm" onclick="updateEnrollment(${l.id},'confirm')"><i class="fas fa-check"></i> Enroll</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ============================================================
+// SEND OFFER TO CANDIDATE
+// ============================================================
+
+
+
+// ============================================================
+// SEND OFFER - USES EXISTING update_status API
+// ============================================================
+// ============================================================
+// SEND OFFER WITH LOADING SPINNER
+// ============================================================
+async function sendSingleOffer(leadId) {
+    // Find the button that was clicked
+    const buttons = document.querySelectorAll(`button[onclick*="sendSingleOffer(${leadId})"]`);
+    const btn = buttons[buttons.length - 1];
+    
+    // Save original button content
+    const originalHtml = btn.innerHTML;
+    
+    // Show loading spinner
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    btn.disabled = true;
+    
+    const deadline = prompt('Enter deadline for document submission (YYYY-MM-DD):', 
+        new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0]);
+    
+    if (!deadline) {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        return;
+    }
+    
+    const visitBy = prompt('Enter "Visit by" date (YYYY-MM-DD):',
+        new Date(Date.now() + 3*24*60*60*1000).toISOString().split('T')[0]);
+    
+    if (!visitBy) {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        return;
+    }
+    
+    try {
+        const r = await fetch('api.php?action=send_merit_offer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lead_id: leadId, deadline: deadline, visit_by: visitBy })
+        });
+        
+        const data = await r.json();
+        
+        if (data.success) {
+            notify('✅ Offer sent! WhatsApp: ' + data.notifications.whatsapp + ', Email: ' + data.notifications.email, 'success');
+            loadMeritList();
+        } else {
+            notify('❌ Failed: ' + data.error, 'error');
+        }
+    } catch (error) {
+        notify('❌ Error: ' + error.message, 'error');
+    } finally {
+        // Restore button
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    }
+}
+
+// ============================================================
+// UPDATE ENROLLMENT - Updates leads AND adds to enrollments table
+// ============================================================
+async function updateEnrollment(leadId, action) {
+    if (action !== 'confirm') return;
+    
+    // Find the button for loading spinner
+    const buttons = document.querySelectorAll(`button[onclick*="updateEnrollment(${leadId}")]`);
+    const btn = buttons[buttons.length - 1];
+    const originalHtml = btn?.innerHTML || 'Enroll';
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enrolling...';
+        btn.disabled = true;
+    }
+    
+    try {
+        const r = await fetch('api.php?action=update_enrollment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lead_id: leadId, action: action })
+        });
+        const data = await r.json();
+        
+        if (data.success) {
+            notify('✅ Student enrolled successfully!', 'success');
+            loadMeritList();
+            loadLeads();
+        } else {
+            notify('❌ Failed: ' + data.error, 'error');
+        }
+    } catch (error) {
+        notify('❌ Error: ' + error.message, 'error');
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+}
+
+//===========================SEAT LIMIT====================
+
+// ============================================================
+// SEAT LIMITS FUNCTIONS
+// ============================================================
+async function loadSeatLimits() {
+    const r = await fetch('api.php?action=get_seat_limits&campaign=Fall 2025');
+    const data = await r.json();
+    if (!data.success) return;
+    
+    const programs = ['bscs', 'bsai', 'bscys', 'bsse'];
+    const programNames = {bscs:'BSCS', bsai:'BSAI', bscys:'BSCyS', bsse:'BSSE'};
+    
+    const body = document.getElementById('seatLimitsBody');
+    body.innerHTML = data.seats.map(seat => `
+        <tr>
+            <td><strong>${programNames[seat.program] || seat.program.toUpperCase()}</strong></td>
+            <td><input type="number" id="seats_${seat.program}" value="${seat.total_seats}" class="form-control" style="width:100px" min="0"></td>
+            <td><span class="badge badge-enrolled">${seat.enrolled_count}</span></td>
+            <td><span class="badge ${(seat.total_seats - seat.enrolled_count) > 0 ? 'badge-success' : 'badge-danger'}">${seat.total_seats - seat.enrolled_count}</span></td>
+            <td>${seat.enrolled_count >= seat.total_seats ? '<span class="badge badge-danger">FULL</span>' : '<span class="badge badge-success">OPEN</span>'}</td>
+        </tr>
+    `).join('');
+}
+
+async function saveSeatLimits() {
+    const programs = ['bscs', 'bsai', 'bscys', 'bsse'];
+    
+    for (const prog of programs) {
+        const totalSeats = document.getElementById(`seats_${prog}`).value;
+        const r = await fetch('api.php?action=update_seat_limit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({program: prog, total_seats: totalSeats, campaign: 'Fall 2025'})
+        });
+    }
+    notify('Seat limits saved successfully!', 'success');
+    loadSeatLimits();
+    loadDashboard();
+}
+
+async function showAddCampaignModal() {
+    const name = prompt('Enter campaign name (e.g., Spring 2026):');
+    if (!name) return;
+    const start = prompt('Start date (YYYY-MM-DD):');
+    const end = prompt('End date (YYYY-MM-DD):');
+    
+    const r = await fetch('api.php?action=add_campaign', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({campaign_name: name, start_date: start, end_date: end})
+    });
+    const data = await r.json();
+    if (data.success) notify('Campaign created!', 'success');
+    else notify(data.error, 'error');
+}
+
+// ============================================================
+// STUDENTS BY PROGRAM
+// ============================================================
+let currentProgramFilter = 'all';
+let allStudents = [];
+
+async function loadStudents() {
+    const r = await fetch('api.php?action=get_leads&limit=1000');
+    const data = await r.json();
+    if (data.success) {
+        allStudents = data.leads;
+        filterStudentsByProgram(currentProgramFilter);
+    }
+}
+
+function filterStudentsByProgram(program) {
+    currentProgramFilter = program;
+    
+    // Update active button style
+    document.querySelectorAll('#page-students .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase() === program || (program === 'all' && btn.textContent === 'All')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    let filtered = allStudents;
+    if (program !== 'all') {
+        filtered = allStudents.filter(s => s.interested_program === program);
+    }
+    
+    renderStudentsTable(filtered);
+}
+
+function renderStudentsTable(students) {
+    const body = document.getElementById('studentsTableBody');
+    
+    if (!students.length) {
+        body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem">No students found</td></tr>';
+        return;
+    }
+    
+    body.innerHTML = students.map(s => {
+        // Profile image HTML
+        const profileHtml = s.profile_picture && s.profile_picture !== 'null' ?
+            `<img src="${s.profile_picture}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)" 
+                  onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=0f4c81&color=fff&size=40'">` :
+            `<div style="width:40px;height:40px;border-radius:50%;background:var(--navy);color:white;display:flex;align-items:center;justify-content:center;font-weight:700">${s.full_name.charAt(0)}</div>`;
+        
+        return `
+            <tr>
+                <td><code>#${s.id}</code></td>
+                <td style="text-align:center">${profileHtml}</td>
+                <td><strong>${s.full_name}</strong><br><small style="color:var(--text-muted)">${s.father_name || ''}</small></td>
+                <td><span class="badge badge-primary">${(s.interested_program || '').toUpperCase()}</span></td>
+                <td>${s.email || '—'}</td>
+                <td>${s.phone || '—'}</td>
+                <td><span class="badge badge-${s.status || 'new'}">${(s.status || 'new').replace('_', ' ')}</span></td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="downloadAdmissionForm(${s.id})"><i class="fas fa-download"></i> Form</button>
+                    <button class="btn btn-secondary btn-sm" onclick="printAdmissionForm(${s.id})"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn btn-info btn-sm" onclick="openPanel(${s.id})"><i class="fas fa-eye"></i> View</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ============================================================
+// DOWNLOAD ADMISSION FORM (HTML/PDF)
+// ============================================================
+async function downloadAdmissionForm(leadId) {
+    const r = await fetch(`api.php?action=get_lead&id=${leadId}`);
+    const data = await r.json();
+    if (!data.success) {
+        notify('Error loading student data', 'error');
+        return;
+    }
+    
+    const s = data.lead;
+    
+    // Create form HTML
+    const formHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Admission Form - ${s.full_name}</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                padding: 40px;
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+            }
+            .header {
+                text-align: center;
+                border-bottom: 3px solid #b8891a;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+            }
+            .header h1 { color: #0d2340; margin: 0; }
+            .header h3 { color: #6b7a8d; margin: 5px 0; }
+            .student-info {
+                display: flex;
+                gap: 30px;
+                margin-bottom: 30px;
+                background: #f5f4f0;
+                padding: 20px;
+                border-radius: 10px;
+            }
+            .student-photo {
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid #b8891a;
+            }
+            .student-details { flex: 1; }
+            .info-row {
+                display: flex;
+                margin-bottom: 10px;
+                padding: 5px 0;
+                border-bottom: 1px solid #d8deea;
+            }
+            .info-label { width: 150px; font-weight: bold; color: #0d2340; }
+            .info-value { flex: 1; color: #1a1a2e; }
+            .section {
+                margin: 25px 0;
+                page-break-inside: avoid;
+            }
+            .section-title {
+                background: #0d2340;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 5px;
+                margin-bottom: 15px;
+            }
+            table { width: 100%; border-collapse: collapse; }
+            td { padding: 8px; border-bottom: 1px solid #d8deea; }
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #d8deea;
+                font-size: 12px;
+                color: #6b7a8d;
+            }
+            .status-badge {
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 15px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .status-enrolled { background: #d4edda; color: #155724; }
+            .status-selected { background: #d1ecf1; color: #0c5460; }
+            .status-pending { background: #fff3cd; color: #856404; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>NATIONAL UNIVERSITY OF TECHNOLOGY</h1>
+            <h3>Admission Application Form - ${(s.interested_program || '').toUpperCase()} Program</h3>
+            <p>Application ID: <strong>#${s.id}</strong> | Date: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div class="student-info">
+            ${s.profile_picture ? `<img src="${s.profile_picture}" class="student-photo" onerror="this.style.display='none'">` : '<div style="width:150px"></div>'}
+            <div class="student-details">
+                <div class="info-row"><div class="info-label">Full Name:</div><div class="info-value">${s.full_name || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Father's Name:</div><div class="info-value">${s.father_name || '—'}</div></div>
+                <div class="info-row"><div class="info-label">CNIC / B-Form:</div><div class="info-value">${s.cnic || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Email:</div><div class="info-value">${s.email || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Phone:</div><div class="info-value">${s.phone || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Address:</div><div class="info-value">${s.address || '—'}</div></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Academic Information</div>
+            <table>
+                <tr><td style="width:40%"><strong>Education:</strong></td><td>${s.education || '—'}</td></tr>
+                <tr><td><strong>Academic Percentage:</strong></td><td>${s.academic_percentage ? s.academic_percentage + '%' : '—'}</td></tr>
+                <tr><td><strong>Passing Year:</strong></td><td>${s.passing_year || '—'}</td></tr>
+                <tr><td><strong>Board:</strong></td><td>${s.board_name || '—'}</td></tr>
+                <tr><td><strong>Roll Number:</strong></td><td>${s.board_roll_no || '—'}</td></tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Test Information</div>
+            <table>
+                <tr><td style="width:40%"><strong>Test Status:</strong></td><td><span class="status-badge status-${s.test_status || 'pending'}">${(s.test_status || 'pending').toUpperCase()}</span></td></tr>
+                <tr><td><strong>Test Score:</strong></td><td>${s.test_score ? s.test_score + '%' : '—'}</td></tr>
+                <tr><td><strong>Roll Number:</strong></td><td>${s.test_roll_number || '—'}</td></tr>
+                ${s.nts_score ? `<tr><td><strong>NTS Score:</strong></td><td>${s.nts_score}%</td></tr>` : ''}
+            </table>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Admission Status</div>
+            <table>
+                <tr><td style="width:40%"><strong>Current Status:</strong></td><td><span class="status-badge status-${s.status || 'new'}">${(s.status || 'new').replace('_', ' ').toUpperCase()}</span></td></tr>
+                <tr><td><strong>Source:</strong></td><td>${s.source || '—'}</td></tr>
+                <tr><td><strong>Score:</strong></td><td>${s.score || 0} points</td></tr>
+                <tr><td><strong>Applied On:</strong></td><td>${s.created_at || '—'}</td></tr>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p>This is an official admission form document. For queries, contact admissions@nut.edu.pk | +92-300-1234567</p>
+            <p>Generated on ${new Date().toLocaleString()}</p>
+        </div>
+    </body>
+    </html>
+    `;
+    
+    // Create blob and download
+    const blob = new Blob([formHtml], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Admission_Form_${s.full_name.replace(/\s/g, '_')}_ID${s.id}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    notify('Admission form downloaded', 'success');
+}
+
+// ============================================================
+// PRINT ADMISSION FORM
+// ============================================================
+async function printAdmissionForm(leadId) {
+    const r = await fetch(`api.php?action=get_lead&id=${leadId}`);
+    const data = await r.json();
+    if (!data.success) {
+        notify('Error loading student data', 'error');
+        return;
+    }
+    
+    const s = data.lead;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Admission Form - ${s.full_name}</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+            .header { text-align: center; border-bottom: 3px solid #b8891a; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { color: #0d2340; }
+            .student-info { display: flex; gap: 30px; margin-bottom: 30px; background: #f5f4f0; padding: 20px; border-radius: 10px; }
+            .student-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #b8891a; }
+            .info-row { display: flex; margin-bottom: 10px; padding: 5px 0; border-bottom: 1px solid #ddd; }
+            .info-label { width: 150px; font-weight: bold; }
+            .section-title { background: #0d2340; color: white; padding: 8px 15px; margin: 20px 0 15px; border-radius: 5px; }
+            .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; }
+            @media print {
+                body { padding: 20px; }
+                .no-print { display: none; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>NATIONAL UNIVERSITY OF TECHNOLOGY</h1>
+            <h3>Admission Application Form - ${(s.interested_program || '').toUpperCase()}</h3>
+            <p>Application ID: #${s.id} | Date: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div class="student-info">
+            ${s.profile_picture ? `<img src="${s.profile_picture}" class="student-photo" onerror="this.style.display='none'">` : ''}
+            <div style="flex:1">
+                <div class="info-row"><div class="info-label">Full Name:</div><div>${s.full_name || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Father's Name:</div><div>${s.father_name || '—'}</div></div>
+                <div class="info-row"><div class="info-label">CNIC:</div><div>${s.cnic || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Email:</div><div>${s.email || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Phone:</div><div>${s.phone || '—'}</div></div>
+                <div class="info-row"><div class="info-label">Address:</div><div>${s.address || '—'}</div></div>
+            </div>
+        </div>
+        
+        <div class="section-title">Academic Information</div>
+        <div class="info-row"><div class="info-label">Education:</div><div>${s.education || '—'}</div></div>
+        <div class="info-row"><div class="info-label">Percentage:</div><div>${s.academic_percentage ? s.academic_percentage + '%' : '—'}</div></div>
+        <div class="info-row"><div class="info-label">Board:</div><div>${s.board_name || '—'}</div></div>
+        <div class="info-row"><div class="info-label">Roll Number:</div><div>${s.board_roll_no || '—'}</div></div>
+        
+        <div class="section-title">Test & Admission Status</div>
+        <div class="info-row"><div class="info-label">Test Status:</div><div>${(s.test_status || 'pending').toUpperCase()}</div></div>
+        <div class="info-row"><div class="info-label">Test Score:</div><div>${s.test_score ? s.test_score + '%' : '—'}</div></div>
+        <div class="info-row"><div class="info-label">Admission Status:</div><div>${(s.status || 'new').replace('_', ' ').toUpperCase()}</div></div>
+        
+        <div class="footer">
+            <p>Official admission document. For queries: admissions@nut.edu.pk</p>
+        </div>
+        
+        <div class="no-print" style="text-align:center; margin-top:20px">
+            <button onclick="window.print()" style="padding:10px 20px">Print Form</button>
+            <button onclick="window.close()" style="padding:10px 20px">Close</button>
+        </div>
+    </body>
+    </html>
+    `);
+    printWindow.document.close();
+}
+
+// ============================================================
+// RESCHEDULE REQUESTS
+// ============================================================
+async function loadRescheduleRequests() {
+    const r = await fetch('api.php?action=get_reschedule_requests');
+    const data = await r.json();
+    const body = document.getElementById('rescheduleRequestsBody');
+    
+    if (!data.success || data.requests.length === 0) {
+        body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem">No pending reschedule requests</td></tr>';
+        return;
+    }
+    
+    body.innerHTML = data.requests.map(req => `
+        <tr>
+            <td>#${req.lead_id}</td>
+            <td>${req.full_name}</td>
+            <td>${req.original_test_date || '—'}</td>
+            <td><span class="badge badge-warning">${req.status}</span></td>
+            <td>
+                <button class="btn btn-success btn-sm" onclick="processReschedule(${req.lead_id}, 'approve')"><i class="fas fa-check"></i> Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="processReschedule(${req.lead_id}, 'reject')"><i class="fas fa-times"></i> Reject</button>
+             </td>
+        </tr>
+    `).join('');
+}
+
+async function processReschedule(leadId, action) {
+    const r = await fetch('api.php?action=process_reschedule', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({lead_id: leadId, action: action})
+    });
+    const data = await r.json();
+    
+    if (data.success) {
+        notify(data.message, 'success');
+        loadRescheduleRequests();
+        loadLeads();
+    } else {
+        notify(data.error, 'error');
+    }
+}
+
+// ============================================================
+// BULK TEST SENDING
+// ============================================================
+let eligibleStudents = [];
+let selectedStudentIds = new Set();
+
+async function loadEligibleStudents() {
+    const program = document.getElementById('bulkProgramFilter').value;
+    const r = await fetch(`api.php?action=get_eligible_bulk_test&program=${program}&limit=200`);
+    const data = await r.json();
+    
+    if (!data.success) {
+        notify(data.error, 'error');
+        return;
+    }
+    
+    eligibleStudents = data.students;
+    selectedStudentIds.clear();
+    
+    const body = document.getElementById('eligibleStudentsBody');
+    
+    if (eligibleStudents.length === 0) {
+        body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem">No eligible students found. Students need status = "applied" and no test sent yet.</td></tr>';
+        document.getElementById('selectedCount').textContent = '0';
+        return;
+    }
+    
+    body.innerHTML = eligibleStudents.map((s, index) => {
+        const priorityScore = (s.academic_percentage * 0.6 + (s.test_score || 0) * 0.4).toFixed(2);
+        const rankBadge = index < 3 ? ['🥇', '🥈', '🥉'][index] : '';
+        
+        return `
+            <tr style="${index < 5 ? 'background:var(--gold-bg)' : ''}">
+                <td><input type="checkbox" class="student-checkbox" value="${s.id}" onchange="updateSelectedCount()"></td>
+                <td><code>#${s.id}</code> ${rankBadge}</td>
+                <td style="font-weight:${index < 3 ? 'bold' : 'normal'}">${s.full_name}</td>
+                <td>${(s.interested_program || '').toUpperCase()}</td>
+                <td>${s.academic_percentage ? s.academic_percentage + '%' : '—'}</td>
+                <td>${s.test_score ? s.test_score + '%' : '—'}</td>
+                <td><strong style="color:${index < 3 ? '#b8891a' : '#0f4c81'}">${priorityScore}%</strong></td>
+                <td><span class="badge badge-applied">Applied</span></td>
+            </tr>
+        `;
+    }).join('');
+    
+    document.getElementById('selectAllCheckbox').checked = false;
+    updateSelectedCount();
+}
+
+function toggleSelectAll() {
+    const isChecked = document.getElementById('selectAllCheckbox').checked;
+    const checkboxes = document.querySelectorAll('#eligibleStudentsBody .student-checkbox');
+    checkboxes.forEach(cb => cb.checked = isChecked);
+    updateSelectedCount();
+}
+
+function selectAllEligible() {
+    document.getElementById('selectAllCheckbox').checked = true;
+    const checkboxes = document.querySelectorAll('#eligibleStudentsBody .student-checkbox');
+    checkboxes.forEach(cb => cb.checked = true);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('#eligibleStudentsBody .student-checkbox:checked');
+    document.getElementById('selectedCount').textContent = checkboxes.length;
+}
+
+async function sendBulkTestLinks() {
+    const checkboxes = document.querySelectorAll('#eligibleStudentsBody .student-checkbox:checked');
+    const lead_ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (lead_ids.length === 0) {
+        notify('Please select at least one student', 'error');
+        return;
+    }
+    
+    const testType = document.getElementById('bulkTestType').value;
+    const btn = document.getElementById('bulkSendBtn');
+    const originalHtml = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    btn.disabled = true;
+    
+    const r = await fetch('api.php?action=bulk_send_test_links', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({lead_ids: lead_ids, test_type: testType})
+    });
+    
+    const data = await r.json();
+    
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    
+    if (data.success) {
+        notify(`✅ Sent to ${data.sent} students (${data.failed} failed)`, 'success');
+        loadEligibleStudents(); // Refresh list
+        loadLeads(); // Refresh main leads table
+        renderScheduledTests(); // Update scheduled tests list
+    } else {
+        notify(data.error, 'error');
+    }
+}
+
+async function updatePriorityScores() {
+    const r = await fetch('api.php?action=update_priority_scores');
+    const data = await r.json();
+    
+    if (data.success) {
+        notify(`✅ ${data.message}`, 'success');
+        loadEligibleStudents();
+    } else {
+        notify(data.error, 'error');
+    }
+}
+
+// Add test_sent column to leads table if not exists
+async function ensureTestSentColumn() {
+    // This would be done via SQL manually
+    console.log('Ensure leads.test_sent column exists in database');
+}
+
+// ============================================================
+// ABSENT STUDENTS RESCHEDULE
+// ============================================================
+async function loadAbsentStudents() {
+    const r = await fetch('api.php?action=get_absent_students');
+    const data = await r.json();
+    const body = document.getElementById('absentStudentsBody');
+    
+    if (!data.success || data.students.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem">No absent students found. All good!</td></tr>';
+        return;
+    }
+    
+    body.innerHTML = data.students.map(s => `
+        <tr>
+            <td>#${s.id}</td>
+            <td><strong>${s.full_name}</strong></td>
+            <td>${(s.interested_program || '').toUpperCase()}</td>
+            <td>${s.test_date || 'Not scheduled'}</td>
+            <td><span class="badge badge-absent">Absent</span></td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="rescheduleTest(${s.id})">
+                    <i class="fas fa-calendar-plus"></i> Reschedule Test
+                </button>
+             </td>
+         </tr>
+    `).join('');
+}
+
+async function rescheduleTest(leadId) {
+    if (!confirm('Reschedule test for this student? Only ONE reschedule allowed.')) return;
+    
+    const btn = event.target;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rescheduling...';
+    btn.disabled = true;
+    
+    const r = await fetch('api.php?action=reschedule_test', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({lead_id: leadId})
+    });
+    
+    const data = await r.json();
+    
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    
+    if (data.success) {
+        notify(`✅ Test rescheduled! New link sent to student.`, 'success');
+        loadAbsentStudents();
+        loadLeads();
+    } else {
+        notify(`❌ ${data.error}`, 'error');
+    }
+}
+</script>
+</body>
+</html>

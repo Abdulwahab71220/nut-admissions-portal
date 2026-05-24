@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Entrance Test</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  :root{--primary:#0f4c81;--accent:#e63946;--success:#2dc653;--warn:#ffd60a;--bg:#f0f4f8;--card:#fff;--text:#1a1a2e}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  
+  /* SCREENS */
+  .screen{display:none;min-height:100vh}
+  .screen.active{display:flex;flex-direction:column}
+  
+  /* HEADER */
+  .test-header{background:var(--primary);color:#fff;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.3)}
+  .test-header h1{font-size:1.2rem;font-family:'IBM Plex Mono',monospace}
+  .timer-box{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);border-radius:8px;padding:.5rem 1.2rem;font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:600;min-width:100px;text-align:center}
+  .timer-box.danger{background:rgba(230,57,70,.3);border-color:var(--accent);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  
+  /* LOADING */
+  #loadingScreen{background:var(--primary);color:#fff;justify-content:center;align-items:center;text-align:center}
+  .loader{width:60px;height:60px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin:2rem auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  
+  /* INFO SCREEN */
+  #infoScreen{justify-content:center;align-items:center;padding:2rem;background:linear-gradient(135deg,#0f4c81,#1a237e)}
+  .info-card{background:#fff;border-radius:20px;padding:2.5rem;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .info-card h2{font-size:1.8rem;color:var(--primary);margin-bottom:.5rem}
+  .info-detail{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+  .detail-box{background:#f0f4f8;border-radius:10px;padding:1rem;text-align:center}
+  .detail-box .label{font-size:.8rem;color:#666;margin-bottom:.3rem}
+  .detail-box .value{font-size:1.3rem;font-weight:700;color:var(--primary);font-family:'IBM Plex Mono',monospace}
+  .rules-list{background:#fff3cd;border-left:4px solid var(--warn);border-radius:8px;padding:1rem;margin:1rem 0;font-size:.9rem}
+  .rules-list li{margin:.4rem 0;list-style:none;padding-left:1.5rem;position:relative}
+  .rules-list li::before{content:'⚠️';position:absolute;left:0}
+  .start-btn{background:linear-gradient(135deg,var(--primary),#1565c0);color:#fff;border:none;padding:1rem 2rem;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;width:100%;margin-top:1rem;transition:.3s}
+  .start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,76,129,.4)}
+  
+  /* TEST SCREEN */
+  #testScreen{flex-direction:column}
+  .test-body{display:grid;grid-template-columns:280px 1fr;flex:1;gap:0}
+  
+  /* QUESTION NAV */
+  .q-nav{background:#1a1a2e;padding:1rem;overflow-y:auto;height:calc(100vh - 65px);position:sticky;top:65px}
+  .q-nav h4{color:#aaa;font-size:.8rem;letter-spacing:1px;margin-bottom:.8rem;text-transform:uppercase}
+  .q-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .q-btn{width:36px;height:36px;border:2px solid #333;background:#222;color:#aaa;border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:600;transition:.2s}
+  .q-btn.answered{background:var(--primary);border-color:var(--primary);color:#fff}
+  .q-btn.current{border-color:var(--accent);color:var(--accent)}
+  .q-btn.answered.current{background:var(--primary);border-color:var(--accent)}
+  .q-progress{margin-top:1rem;padding-top:1rem;border-top:1px solid #333}
+  .progress-bar{background:#333;border-radius:10px;height:8px;margin:.5rem 0}
+  .progress-fill{background:var(--success);border-radius:10px;height:100%;transition:.3s}
+  .progress-text{color:#aaa;font-size:.8rem;text-align:center}
+  
+  /* QUESTION AREA */
+  .q-area{padding:2rem;overflow-y:auto;height:calc(100vh - 65px)}
+  .question-card{background:#fff;border-radius:16px;padding:2rem;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+  .q-number{font-size:.85rem;color:#888;font-family:'IBM Plex Mono',monospace;margin-bottom:.5rem}
+  .q-subject{display:inline-block;background:#e3f2fd;color:var(--primary);padding:.2rem .7rem;border-radius:20px;font-size:.8rem;font-weight:600;margin-bottom:1rem}
+  .q-text{font-size:1.1rem;font-weight:500;line-height:1.6;margin-bottom:1.5rem;color:#1a1a2e}
+  .options{display:grid;gap:.75rem}
+  .option{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;border:2px solid #e0e0e0;border-radius:10px;cursor:pointer;transition:.2s;background:#fafafa}
+  .option:hover{border-color:var(--primary);background:#e3f2fd}
+  .option.selected{border-color:var(--primary);background:#e3f2fd}
+  .option-letter{width:32px;height:32px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;transition:.2s}
+  .option.selected .option-letter{background:var(--primary);color:#fff}
+  .option-text{font-size:.95rem;line-height:1.4}
+  
+  .q-controls{display:flex;justify-content:space-between;margin-top:1.5rem;gap:1rem}
+  .nav-btn{padding:.75rem 1.5rem;border:2px solid var(--primary);border-radius:8px;background:#fff;color:var(--primary);font-weight:600;cursor:pointer;transition:.2s;font-size:.9rem}
+  .nav-btn:hover{background:var(--primary);color:#fff}
+  .nav-btn.primary{background:var(--primary);color:#fff}
+  .nav-btn:disabled{opacity:.4;cursor:not-allowed}
+  
+  .submit-test-btn{background:linear-gradient(135deg,#2dc653,#1e8c3a);color:#fff;border:none;padding:1rem 2rem;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;transition:.3s}
+  .submit-test-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(45,198,83,.4)}
+  
+  /* RESULT SCREEN */
+  #resultScreen{justify-content:center;align-items:center;padding:2rem;background:linear-gradient(135deg,#0f4c81,#1a237e)}
+  .result-card{background:#fff;border-radius:20px;padding:2.5rem;max-width:500px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .result-icon{font-size:5rem;margin-bottom:1rem}
+  .result-score{font-size:4rem;font-weight:800;font-family:'IBM Plex Mono',monospace;margin:1rem 0}
+  .score-pass{color:var(--success)}
+  .score-fail{color:var(--accent)}
+  .result-details{background:#f0f4f8;border-radius:10px;padding:1rem;margin:1.5rem 0;text-align:left}
+  .result-details p{margin:.4rem 0;font-size:.95rem}
+  
+  /* WARNING OVERLAY */
+  .tab-warning{position:fixed;inset:0;background:rgba(230,57,70,.95);z-index:9999;display:none;justify-content:center;align-items:center;text-align:center;color:#fff}
+  .tab-warning.show{display:flex}
+  .tab-warning-box{max-width:400px;padding:2rem}
+  .tab-warning-box h2{font-size:2rem;margin-bottom:1rem}
+  .dismiss-btn{background:#fff;color:var(--accent);border:none;padding:.75rem 2rem;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;margin-top:1rem}
+  
+  /* CONFIRM OVERLAY */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:none;justify-content:center;align-items:center}
+  .overlay.show{display:flex}
+  .confirm-box{background:#fff;border-radius:16px;padding:2rem;max-width:400px;width:90%;text-align:center}
+  .confirm-box h3{margin-bottom:1rem;font-size:1.3rem}
+  .confirm-box p{color:#666;margin-bottom:1.5rem}
+  .confirm-btns{display:flex;gap:1rem;justify-content:center}
+  .btn-cancel{padding:.75rem 1.5rem;border:2px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-weight:600}
+  .btn-confirm{padding:.75rem 1.5rem;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+
+  @media(max-width:768px){
+    .test-body{grid-template-columns:1fr}
+    .q-nav{height:auto;position:static}
+    .q-area{height:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- TAB SWITCH WARNING -->
+<div class="tab-warning" id="tabWarning">
+  <div class="tab-warning-box">
+    <div style="font-size:4rem">⚠️</div>
+    <h2>Tab Switch Detected!</h2>
+    <p id="warningMsg">Warning 1/3: Do not switch tabs or minimize the window. After 3 warnings, your test will be cancelled.</p>
+    <button class="dismiss-btn" onclick="dismissWarning()">I Understand — Continue Test</button>
+  </div>
+</div>
+
+<!-- SUBMIT CONFIRM -->
+<div class="overlay" id="submitOverlay">
+  <div class="confirm-box">
+    <div style="font-size:3rem">📋</div>
+    <h3>Submit Test?</h3>
+    <p id="submitMsg">Are you sure you want to submit? You cannot change answers after submission.</p>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="document.getElementById('submitOverlay').classList.remove('show')">Cancel</button>
+      <button class="btn-confirm" onclick="doSubmit()">Submit Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div class="screen active" id="loadingScreen">
+  <div class="loader"></div>
+  <h2>Loading Your Test...</h2>
+  <p style="opacity:.7;margin-top:.5rem">Please wait</p>
+</div>
+
+<!-- INFO SCREEN -->
+<div class="screen" id="infoScreen">
+  <div class="info-card">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:3rem">🎓</div>
+      <h2>Entrance Test</h2>
+      <p style="color:#666">University Admissions Portal</p>
+    </div>
+    <div class="info-detail">
+      <div class="detail-box"><div class="label">Student</div><div class="value" id="infoName" style="font-size:1rem">—</div></div>
+      <div class="detail-box"><div class="label">Roll Number</div><div class="value" id="infoRoll">—</div></div>
+      <div class="detail-box"><div class="label">Questions</div><div class="value" id="infoQCount">50</div></div>
+      <div class="detail-box"><div class="label">Duration</div><div class="value" id="infoDuration">20 Min</div></div>
+    </div>
+    <ul class="rules-list">
+      <li>Do NOT switch tabs or minimize the window</li>
+      <li>3 tab switches = automatic test cancellation</li>
+      <li>Do not refresh the page</li>
+      <li>Ensure stable internet connection</li>
+      <li>Passing score: 50% (25 out of 50)</li>
+      <li>Results announced immediately after submission</li>
+    </ul>
+    <p style="font-size:.85rem;color:#888;text-align:center">Program: <strong id="infoProgram">—</strong></p>
+    <button class="start-btn" onclick="startTest()">
+      <i class="fas fa-play-circle"></i> Start Test Now
+    </button>
+  </div>
+</div>
+
+<!-- TEST SCREEN -->
+<div class="screen" id="testScreen">
+  <div class="test-header">
+    <h1><i class="fas fa-file-alt"></i> Entrance Test — <span id="headerRoll">—</span></h1>
+    <div class="timer-box" id="timer">20:00</div>
+  </div>
+  <div class="test-body">
+    <div class="q-nav">
+      <h4>Questions</h4>
+      <div class="q-grid" id="qGrid"></div>
+      <div class="q-progress">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="progress-text" id="progressText">0 / 0 answered</div>
+      </div>
+      <div style="margin-top:1.5rem">
+        <button class="submit-test-btn" style="width:100%" onclick="confirmSubmit()">
+          <i class="fas fa-paper-plane"></i> Submit Test
+        </button>
+      </div>
+    </div>
+    <div class="q-area">
+      <div class="question-card">
+        <div class="q-number" id="qNumber">Question 1 of 50</div>
+        <span class="q-subject" id="qSubject">Subject</span>
+        <div class="q-text" id="qText">Loading...</div>
+        <div class="options" id="options"></div>
+        <div class="q-controls">
+          <button class="nav-btn" id="prevBtn" onclick="prevQ()" disabled>← Previous</button>
+          <span id="qCounter" style="align-self:center;color:#888;font-size:.9rem"></span>
+          <button class="nav-btn primary" id="nextBtn" onclick="nextQ()">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div class="screen" id="resultScreen">
+  <div class="result-card">
+    <div class="result-icon" id="resultIcon">🎉</div>
+    <h2 id="resultTitle">Test Complete!</h2>
+    <div class="result-score" id="resultScore">—%</div>
+    <div id="resultBadge" style="margin-bottom:1rem"></div>
+    <div class="result-details" id="resultDetails"></div>
+    <p style="color:#666;font-size:.9rem;margin-top:1rem">Results have been sent to your email and WhatsApp.</p>
+    <a href="index.html" style="display:inline-block;margin-top:1.5rem;background:var(--primary);color:#fff;padding:.75rem 2rem;border-radius:8px;text-decoration:none;font-weight:600">
+      <i class="fas fa-home"></i> Back to Portal
+    </a>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const TOKEN = params.get('token');
+let testData = null, answers = {}, currentQ = 0, timerInterval = null, timeLeft = 1200, tabSwitches = 0, testStarted = false;
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = async function() {
+  if (!TOKEN) { showError('Invalid test link. Please use the link sent to you.'); return; }
+  try {
+    const r = await fetch(`api.php?action=get_online_test&token=${TOKEN}`);
+    const data = await r.json();
+    if (!data.success) { showError(data.error || 'Test not available'); return; }
+    testData = data;
+    timeLeft = (testData.time_limit || 20) * 60;
+    showScreen('infoScreen');
+    document.getElementById('infoName').textContent = testData.student_name;
+    document.getElementById('infoRoll').textContent = testData.roll_number;
+    document.getElementById('infoQCount').textContent = testData.total_questions;
+    document.getElementById('infoDuration').textContent = testData.time_limit + ' Min';
+    document.getElementById('infoProgram').textContent = (testData.program||'').toUpperCase();
+    document.getElementById('headerRoll').textContent = testData.roll_number;
+  } catch(e) { showError('Network error. Please check connection.'); }
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showError(msg) {
+  document.getElementById('loadingScreen').innerHTML = `<div style="text-align:center;padding:2rem"><div style="font-size:4rem">❌</div><h2 style="color:#fff;margin:1rem 0">Error</h2><p style="color:rgba(255,255,255,.8)">${msg}</p></div>`;
+}
+
+// ============================================================
+// START TEST
+// ============================================================
+async function startTest() {
+  await fetch('api.php?action=start_online_test', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOKEN})});
+  testStarted = true;
+  renderQuestions();
+  showScreen('testScreen');
+  startTimer();
+  setupAntiCheat();
+}
+
+function renderQuestions() {
+  const grid = document.getElementById('qGrid');
+  grid.innerHTML = '';
+  testData.questions.forEach((q,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-btn' + (i===0?' current':'');
+    btn.textContent = i+1;
+    btn.onclick = () => goToQ(i);
+    btn.id = `qb_${i}`;
+    grid.appendChild(btn);
+  });
+  renderQ(0);
+}
+
+function renderQ(idx) {
+  currentQ = idx;
+  const q = testData.questions[idx];
+  document.getElementById('qNumber').textContent = `Question ${idx+1} of ${testData.questions.length}`;
+  document.getElementById('qSubject').textContent = q.subject;
+  document.getElementById('qText').textContent = q.question_text;
+  document.getElementById('qCounter').textContent = `${idx+1}/${testData.questions.length}`;
+  document.getElementById('prevBtn').disabled = idx===0;
+  document.getElementById('nextBtn').textContent = idx===testData.questions.length-1 ? 'Submit →' : 'Next →';
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  ['a','b','c','d'].forEach(letter => {
+    const div = document.createElement('div');
+    div.className = 'option' + (answers[q.id]===letter?' selected':'');
+    div.onclick = () => selectAnswer(q.id, letter, div);
+    div.innerHTML = `<div class="option-letter">${letter.toUpperCase()}</div><div class="option-text">${q['option_'+letter]}</div>`;
+    opts.appendChild(div);
+  });
+
+  // Update nav grid
+  document.querySelectorAll('.q-btn').forEach((b,i) => {
+    b.className = 'q-btn' + (answers[testData.questions[i].id]?' answered':'') + (i===idx?' current':'');
+  });
+
+  updateProgress();
+}
+
+function selectAnswer(qId, letter, div) {
+  answers[qId] = letter;
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  div.classList.add('selected');
+  const btn = document.getElementById(`qb_${currentQ}`);
+  if (btn) btn.className = 'q-btn answered current';
+  updateProgress();
+}
+
+function goToQ(idx) { renderQ(idx); }
+function prevQ() { if (currentQ > 0) renderQ(currentQ-1); }
+function nextQ() {
+  if (currentQ < testData.questions.length-1) renderQ(currentQ+1);
+  else confirmSubmit();
+}
+
+function updateProgress() {
+  const answered = Object.keys(answers).length;
+  const total = testData.questions.length;
+  const pct = (answered/total)*100;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = `${answered} / ${total} answered`;
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const m = Math.floor(timeLeft/60), s = timeLeft%60;
+    const timerEl = document.getElementById('timer');
+    timerEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (timeLeft <= 120) timerEl.classList.add('danger');
+    if (timeLeft <= 0) { clearInterval(timerInterval); doSubmit(); }
+  }, 1000);
+}
+
+// ============================================================
+// ANTI-CHEAT
+// ============================================================
+function setupAntiCheat() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && testStarted) reportTabSwitch();
+  });
+  window.addEventListener('blur', () => { if (testStarted) reportTabSwitch(); });
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && ['c','v','a','p'].includes(e.key.toLowerCase())) e.preventDefault();
+  });
+}
+
+async function reportTabSwitch() {
+  tabSwitches++;
+  const r = await fetch('api.php?action=tab_switch', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOKEN})});
+  const data = await r.json();
+  if (data.cancelled) {
+    clearInterval(timerInterval);
+    document.getElementById('tabWarning').classList.remove('show');
+    showResult({score:0, correct:0, total:testData.questions.length, passed:false, result:'failed', cancelled:true});
+    return;
+  }
+  document.getElementById('warningMsg').textContent = data.warning || `Warning ${tabSwitches}/3`;
+  document.getElementById('tabWarning').classList.add('show');
+}
+
+function dismissWarning() { document.getElementById('tabWarning').classList.remove('show'); }
+
+// ============================================================
+// SUBMIT
+// ============================================================
+function confirmSubmit() {
+  const answered = Object.keys(answers).length;
+  const total = testData.questions.length;
+  const unanswered = total - answered;
+  document.getElementById('submitMsg').textContent = unanswered > 0
+    ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?`
+    : 'All questions answered. Ready to submit?';
+  document.getElementById('submitOverlay').classList.add('show');
+}
+
+async function doSubmit() {
+  document.getElementById('submitOverlay').classList.remove('show');
+  clearInterval(timerInterval);
+  showScreen('loadingScreen');
+  document.getElementById('loadingScreen').innerHTML = '<div class="loader"></div><h2 style="color:#fff;margin-top:1rem">Submitting & Grading...</h2>';
+
+  const r = await fetch('api.php?action=submit_online_test', {
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN, answers})
+  });
+  const data = await r.json();
+  showResult(data);
+}
+
+function showResult(data) {
+  showScreen('resultScreen');
+  const passed = data.passed;
+  document.getElementById('resultIcon').textContent = passed ? '🎉' : '😔';
+  document.getElementById('resultTitle').textContent = passed ? 'Congratulations!' : 'Better Luck Next Time';
+  document.getElementById('resultScore').textContent = (data.score||0).toFixed(1)+'%';
+  document.getElementById('resultScore').className = 'result-score ' + (passed?'score-pass':'score-fail');
+  document.getElementById('resultBadge').innerHTML = `<span style="background:${passed?'#d4edda':'#f8d7da'};color:${passed?'#155724':'#721c24'};padding:.5rem 1.5rem;border-radius:20px;font-weight:700;font-size:1.1rem">${passed?'✅ PASSED':'❌ FAILED'}</span>`;
+  document.getElementById('resultDetails').innerHTML = `
+    <p>📊 <strong>Score:</strong> ${(data.score||0).toFixed(1)}%</p>
+    <p>✅ <strong>Correct:</strong> ${data.correct||0} / ${data.total||50}</p>
+    <p>📋 <strong>Result:</strong> ${(data.result||'').toUpperCase()}</p>
+    ${data.cancelled ? '<p style="color:red">⚠️ Test was cancelled due to tab switching</p>' : ''}
+    ${passed ? '<p style="color:#155724;margin-top:.5rem">Our team will contact you for next steps.</p>' : '<p style="color:#721c24;margin-top:.5rem">You may retake after 30 days.</p>'}
+  `;
+}
+</script>
+</body>
+</html>

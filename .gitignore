@@ -1,0 +1,22 @@
+# Sensitive files
+config.php
+email-service.php
+whatsapp-business-api.php
+ai-chatbot.php
+
+# Uploaded files
+uploads/
+*.log
+*.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# XAMPP temp files
+error_log
+access_log

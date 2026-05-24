@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Login — NUT Admissions Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --navy:    #0d2340;
+  --navy2:   #163355;
+  --gold:    #b8891a;
+  --gold-lt: #f0b429;
+  --gold-bg: #fffbef;
+  --blue:    #1a56a0;
+  --blue-lt: #e8f0fa;
+  --cream:   #f5f4f0;
+  --white:   #ffffff;
+  --text:    #1a1a2e;
+  --text2:   #3d4d66;
+  --muted:   #6b7a8d;
+  --border:  #d8deea;
+  --red:     #c53030;
+  --green:   #276749;
+  --green-bg:#f0fff4;
+  --shadow:  0 2px 12px rgba(13,35,64,.08);
+  --shadow-lg:0 16px 48px rgba(13,35,64,.16);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* SUBTLE BACKGROUND PATTERN */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(13,35,64,.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(184,137,26,.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+::selection { background: var(--gold-lt); color: var(--navy); }
+a { text-decoration: none; color: inherit; }
+
+/* SHELL */
+.login-shell {
+  max-width: 460px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* HEADER BAR */
+.login-hdr {
+  background: var(--navy);
+  border-radius: 12px 12px 0 0;
+  padding: 1rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.hdr-logo {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  color: var(--white);
+}
+.hdr-logo i { color: var(--gold-lt); font-size: 1.1rem; }
+.hdr-logo span {
+  font-family: 'Merriweather', serif;
+  font-size: .88rem;
+  font-weight: 700;
+}
+.hdr-back {
+  color: rgba(255,255,255,.5);
+  font-size: .76rem;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  transition: .2s;
+}
+.hdr-back:hover { color: var(--gold-lt); }
+
+/* MAIN CARD */
+.login-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* TOP ACCENT STRIP */
+.card-accent {
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-lt), var(--gold));
+}
+
+/* IDENTITY BLOCK */
+.login-identity {
+  padding: 2.2rem 2rem 1.6rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.identity-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.1rem;
+  border: 3px solid var(--gold);
+  box-shadow: 0 4px 20px rgba(13,35,64,.18);
+}
+.identity-icon i { font-size: 1.6rem; color: var(--gold-lt); }
+.login-identity h1 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--navy);
+  margin-bottom: .3rem;
+}
+.login-identity p { font-size: .84rem; color: var(--muted); }
+
+/* FORM BODY */
+.login-form-body { padding: 1.6rem 2rem; }
+
+/* FIELDS */
+.f-group { display: flex; flex-direction: column; gap: .28rem; margin-bottom: 1rem; }
+.f-group label {
+  font-size: .77rem;
+  font-weight: 700;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: .38rem;
+}
+.f-group label i { color: var(--gold); font-size: .72rem; }
+.input-wrap { position: relative; }
+.input-wrap input {
+  width: 100%;
+  padding: .68rem 1rem .68rem 2.6rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: .9rem;
+  font-family: 'Source Sans 3', sans-serif;
+  color: var(--text);
+  outline: none;
+  transition: .2s;
+  background: var(--white);
+}
+.input-wrap input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(26,86,160,.09);
+}
+.input-wrap .field-icon {
+  position: absolute;
+  left: .9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: .82rem;
+  pointer-events: none;
+  transition: .2s;
+}
+.input-wrap input:focus + .field-icon { color: var(--blue); }
+.input-wrap .toggle-pw {
+  position: absolute;
+  right: .9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .82rem;
+  transition: .2s;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.input-wrap .toggle-pw:hover { color: var(--navy); }
+
+/* SUBMIT */
+.btn-login {
+  width: 100%;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  padding: .9rem;
+  border-radius: 8px;
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  transition: .25s;
+  margin-top: .35rem;
+  letter-spacing: .2px;
+}
+.btn-login:hover:not(:disabled) {
+  background: var(--navy2);
+  box-shadow: 0 6px 20px rgba(13,35,64,.2);
+  transform: translateY(-1px);
+}
+.btn-login:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+/* MESSAGE */
+.login-msg {
+  margin-top: .9rem;
+  border-radius: 8px;
+  padding: .75rem .95rem;
+  font-size: .83rem;
+  display: none;
+  align-items: flex-start;
+  gap: .5rem;
+}
+.login-msg.success {
+  background: var(--green-bg);
+  border: 1px solid rgba(39,103,73,.2);
+  color: var(--green);
+  display: flex;
+}
+.login-msg.error {
+  background: #fff5f5;
+  border: 1px solid rgba(197,48,48,.2);
+  color: var(--red);
+  display: flex;
+}
+
+/* SECURITY NOTE */
+.security-note {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  font-size: .73rem;
+  color: var(--muted);
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.security-note i { color: var(--gold); flex-shrink: 0; }
+
+/* FOOTER */
+.login-footer {
+  padding: 1rem 2rem;
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: .77rem;
+  color: var(--muted);
+}
+.login-footer a {
+  color: var(--blue);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  transition: .18s;
+}
+.login-footer a:hover { color: var(--navy); }
+
+/* BELOW CARD NOTE */
+.below-note {
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: .75rem;
+  color: var(--muted);
+}
+.below-note i { margin-right: .3rem; }
+</style>
+</head>
+<body>
+
+<div class="login-shell">
+
+  <!-- HEADER BAR -->
+  <div class="login-hdr">
+    <div class="hdr-logo">
+      <i class="fas fa-university"></i>
+      <span>National University of Technology</span>
+    </div>
+    <a href="index.html" class="hdr-back">
+      <i class="fas fa-arrow-left"></i> Student Portal
+    </a>
+  </div>
+
+  <!-- CARD -->
+  <div class="login-card">
+    <div class="card-accent"></div>
+
+    <!-- IDENTITY -->
+    <div class="login-identity">
+      <div class="identity-icon">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <h1>Staff Login</h1>
+      <p>Admissions Management Portal — Authorized Personnel Only</p>
+    </div>
+
+    <!-- FORM -->
+    <div class="login-form-body">
+      <form id="loginForm" novalidate>
+
+        <div class="f-group">
+          <label><i class="fas fa-user"></i> Username</label>
+          <div class="input-wrap">
+            <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+            <i class="fas fa-user field-icon"></i>
+          </div>
+        </div>
+
+        <div class="f-group">
+          <label><i class="fas fa-lock"></i> Password</label>
+          <div class="input-wrap">
+            <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+            <i class="fas fa-lock field-icon"></i>
+            <button type="button" class="toggle-pw" id="togglePw" tabindex="-1" onclick="togglePassword()">
+              <i class="fas fa-eye" id="pwIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i> Sign In to Dashboard
+        </button>
+
+        <div class="login-msg" id="loginMsg"></div>
+
+        <div class="security-note">
+          <i class="fas fa-shield-alt"></i>
+          This portal is restricted to authorized NUT staff only. All login attempts are logged.
+        </div>
+
+      </form>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="login-footer">
+      <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Student Admissions Portal</a>
+    </div>
+
+  </div><!-- /login-card -->
+
+  <div class="below-note">
+    <i class="fas fa-lock"></i> Secured connection &nbsp;·&nbsp; NUT Admissions Portal v2.0
+  </div>
+
+</div><!-- /login-shell -->
+
+<script>
+// ── TOGGLE PASSWORD VISIBILITY ────────────────────────────────
+function togglePassword() {
+  const input  = document.getElementById('password');
+  const icon   = document.getElementById('pwIcon');
+  const isText = input.type === 'text';
+  input.type   = isText ? 'password' : 'text';
+  icon.className = isText ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+// ── LOGIN FORM ────────────────────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const btn    = document.getElementById('loginBtn');
+  const msgDiv = document.getElementById('loginMsg');
+  const user   = document.getElementById('username').value.trim();
+  const pass   = document.getElementById('password').value;
+
+  if (!user || !pass) {
+    msgDiv.className = 'login-msg error';
+    msgDiv.innerHTML = '<i class="fas fa-exclamation-triangle" style="flex-shrink:0"></i><span>Please enter both username and password.</span>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+  msgDiv.className = 'login-msg'; msgDiv.innerHTML = '';
+
+  try {
+    const res = await fetch('api.php?action=admin_login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+
+    // Guard against non-JSON
+    const text = await res.text();
+    let result;
+    try { result = JSON.parse(text); }
+    catch(pe) {
+      console.error('Non-JSON response:', text);
+      msgDiv.className = 'login-msg error';
+      msgDiv.innerHTML = '<i class="fas fa-exclamation-triangle" style="flex-shrink:0"></i><span>Server error. Please try again or contact IT support.</span>';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to Dashboard';
+      return;
+    }
+
+    if (result.success) {
+      localStorage.setItem('admin_user', JSON.stringify(result.user));
+      msgDiv.className = 'login-msg success';
+      msgDiv.innerHTML = `<i class="fas fa-check-circle" style="flex-shrink:0"></i><span>Welcome back, <strong>${result.user.full_name || result.user.username}</strong>! Redirecting to dashboard…</span>`;
+      btn.innerHTML = '<i class="fas fa-check"></i> Signed In!';
+      setTimeout(() => window.location.href = 'dashboard.html', 1400);
+    } else {
+      msgDiv.className = 'login-msg error';
+      msgDiv.innerHTML = `<i class="fas fa-exclamation-triangle" style="flex-shrink:0"></i><span>${result.error || 'Login failed. Please check your credentials.'}</span>`;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to Dashboard';
+      // Shake effect on password field
+      const pwInput = document.getElementById('password');
+      pwInput.style.borderColor = 'var(--red)';
+      setTimeout(() => pwInput.style.borderColor = '', 2000);
+    }
+
+  } catch(err) {
+    console.error(err);
+    msgDiv.className = 'login-msg error';
+    msgDiv.innerHTML = '<i class="fas fa-exclamation-triangle" style="flex-shrink:0"></i><span>Network error. Please check your connection and try again.</span>';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to Dashboard';
+  }
+});
+
+// Auto-focus username
+document.getElementById('username').focus();
+</script>
+</body>
+</html>
