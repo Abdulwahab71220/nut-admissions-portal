@@ -20,3 +20,10 @@ Thumbs.db
 # XAMPP temp files
 error_log
 access_log
+
+# Database files to ignore
+*.sql
+!database/structure.sql
+!database/sample_data.sql
+*.sql.gz
+*.zip
